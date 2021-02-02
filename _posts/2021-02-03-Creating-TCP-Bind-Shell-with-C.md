@@ -58,6 +58,7 @@ The third argument does not concern us so we will only pass 0
 ```C
 sock = socket(AF_INET, SOCK_STREAM, 0);
 ```
+
 The return value for the above syscall will be a file descriptor for the new socket.
 Stage 2 - Binding the newly created socket to a port
 In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
@@ -78,22 +79,34 @@ bind(sock, (struct sockaddr *)&server, sockaddr_len);
 Stage 3 - Listen for incoming connections on the newly created socket
 The listen syscall accepts 2 arguments:
 File descriptor of new socket in Stage 1
-Backlog - Maximum number of pending connections in the queue 
+Backlog - Maximum number of pending connections in the queue
+
+``C
 listen(sock, 2);
+```
+
 Stage 4 - Wait for incoming connections on the newly created socket and if a connection is initiated, create a NEW socket and close the original socket
 For this stage we will wait for connections on our newly created socket, using the accept syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
 The accept syscall takes 3 arguments:
 The socket we are listening on
 Pointer to a sockaddr data structure - as discussed in stage 2. the difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. 
-Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code. 
+Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code.
+
+```C
 new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
 close(sock);
+```
+
 The return value of the accept syscall is a new file descriptor pointing to the newly created socket.
 Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities
 For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the dup2 syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
+
+```C
 dup2(new_sock, 0);
 dup2(new_sock, 1);
 dup2(new_sock, 2);
+```
+
 Stage 6 - Wait for input (password) to be received and compare it against the correct password string
 Now that we have remote shell capabilities on our socket, lets wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the read syscall.
 The read syscall accept 3 arguments:
@@ -101,19 +114,27 @@ File descriptor of our newly created socket
 Buffer - was assigned at the variables section of the code
 Number of bytes to read from the file descriptor into the buffer
 We will then use the strcspn syscall to calculate the number of bytes in the buffer and and using strcmp to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
+
+```C
 read(new_sock, buf, 16);
 buf[strcspn(buf, "\n")] = 0;
 if (strcmp(arguments[3], buf) == 0)
 {
         execve(arguments[0], &arguments[0], NULL);
 }
+```
+
 Stage 7 - Spawn the shell, if password is correct
 So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the execve syscall, as specified in the variables section.
 The execve syscall executes a program using:
 Pathname of the executable or script to run
 A pointer to the filename/executable and arguments passed to the executable. We do not have any arguments in this case, so just the pointer to our executable
 Environmental variables for use by the program - We set this to NULL as we are not concerned with this
+
+```C
 execve(arguments[0], &arguments[0], NULL);
+```
+
 Hopefully, if we have done everything right, we will be presented with our remote shell capabilities on the victim. Personally, I prefer the fact that there is no prompt for a password as it adds an element of obscurity for somebody connecting to the shell without spawning it themselves.
 The code for the password protected bind shell can be found here.
 I hope I explained everything in enough detail for it to make a bit more sense to you as this is also an attempt at understanding the inner workings of bind and reverse shells better.
