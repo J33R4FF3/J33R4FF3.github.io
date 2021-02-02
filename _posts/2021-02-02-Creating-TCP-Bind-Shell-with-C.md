@@ -1,5 +1,6 @@
 ---
 title: "Writing a password protected bind shell in C"
+link: https://man7.org/linux/man-pages/man2/socket.2.html
 categories:
   - blog
 ---
@@ -71,7 +72,7 @@ int main()
 
 Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. 
 
-Referring to the man page for socket, it requires 3 arguments:
+Referring to the man page for [socket](1), it requires 3 arguments:
 
 <ul>
     <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)</li>
