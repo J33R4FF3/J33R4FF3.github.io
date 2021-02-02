@@ -81,7 +81,7 @@ The listen syscall accepts 2 arguments:
 File descriptor of new socket in Stage 1
 Backlog - Maximum number of pending connections in the queue
 
-``C
+``'C
 listen(sock, 2);
 ```
 
