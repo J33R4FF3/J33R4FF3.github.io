@@ -69,11 +69,15 @@ int main()
 }
 ```
 
-Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. Referring to the man page for socket, it requires 3 arguments:
+Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. 
 
-Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)
-Communication Type - We will use SOCK_STREAM (TCP)
-The third argument does not concern us so we will only pass 0
+Referring to the man page for socket, it requires 3 arguments:
+
+<ul>
+    <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)<li>
+    <li>Communication Type - We will use SOCK_STREAM (TCP)<li>
+    <li>The third argument does not concern us so we will only pass 0<li>
+</ul>
 
 ```c++
 sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -81,13 +85,15 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 
 The return value for the above syscall will be a file descriptor for the new socket.
 
-<h3>Stage 2 - Binding the newly created socket to a port</h3>
+<h3><strong>Stage 2 - Binding the newly created socket to a port</strong></h3>
 
 In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
 
-The socket to bind to - We will use our new socket "sock"
-Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.
-Length of the data structure passed in argument 2. This was declared during the skeleton code stage.
+<ul>
+    <li>The socket to bind to - We will use our new socket "sock"<li>
+    <li>Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.<li>
+    <li>Length of the data structure passed in argument 2. This was declared during the skeleton code stage.<li>
+<ul>
 
 ```c++
 server.sin_family = AF_INET; //Address Family
