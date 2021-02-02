@@ -84,6 +84,8 @@ defaults:
       path: ""
       type: posts
     values:
+      header:
+        image: /assets/images/splash_page.jpg
       show_date: true
       layout: single
       classes: wide
