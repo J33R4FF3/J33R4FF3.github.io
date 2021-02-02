@@ -7,10 +7,11 @@ categories:
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately spawn a bind shell and require a password for connecting to it.
 
 To accomplish this goal, we need to take this process through 3 parts:
-
-Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.
-Secondly, the C code needs to be ported to x86_64 Assembly code.
-Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.
+<ol>
+    <il>1. Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</il>
+    <il>2. Secondly, the C code needs to be ported to x86_64 Assembly code.</il>
+    <il>3. Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</il>
+</ol>
 
 This blog post will consist of two parts:
 
