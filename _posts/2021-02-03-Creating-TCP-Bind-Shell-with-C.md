@@ -1,3 +1,8 @@
+title: "Writing a password protected bind shell in C"
+date: 
+categories:
+  - blog
+
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately spawn a bind shell and require a password for connecting to it.
 To accomplish this goal, we need to take this process through 3 parts:
 Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.
@@ -22,6 +27,8 @@ Spawn the shell, if password is correct
 So let's get started in coding out the 7 stages.
 Stage 1 - Creating a new socket
 The skeleton code that we will be departing on this journey from can be seen below. This is essentially just declaring some variables, to be used later, as well as importing the necessary libraries we will be using in the code.
+
+```C
 #include<stdlib.h>
 #include<string.h>
 #include<strings.h>
@@ -38,6 +45,8 @@ int main()
         // Change arguments as required - last argument is password
         char *arguments[] = { "/bin/sh", 0, "4444", "YOLOOOOOOO" };
         char buf[16];
+}```
+
 Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. Referring to the man page for socket, it requires 3 arguments:
 Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)
 Communication Type - We will use SOCK_STREAM (TCP)
