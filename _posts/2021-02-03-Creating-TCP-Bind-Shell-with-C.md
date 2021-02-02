@@ -1,7 +1,9 @@
+---
 title: "Writing a password protected bind shell in C"
 date: 
 categories:
   - blog
+---
 
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately spawn a bind shell and require a password for connecting to it.
 To accomplish this goal, we need to take this process through 3 parts:
