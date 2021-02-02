@@ -109,8 +109,10 @@ bind(sock, (struct sockaddr *)&server, sockaddr_len);
 
 The listen syscall accepts 2 arguments:
 
-File descriptor of new socket in Stage 1
-Backlog - Maximum number of pending connections in the queue
+<ul>
+<li>File descriptor of new socket in Stage 1</li>
+<li>Backlog - Maximum number of pending connections in the queue</li>
+</ul>
 
 ```c++
 listen(sock, 2);
@@ -122,9 +124,11 @@ For this stage we will wait for connections on our newly created socket, using t
 
 The accept syscall takes 3 arguments:
 
-The socket we are listening on
-Pointer to a sockaddr data structure - as discussed in stage 2. the difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. 
-Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code.
+<ul>
+<li>The socket we are listening on</li>
+<li>Pointer to a sockaddr data structure - as discussed in stage 2. the difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. </li>
+<li>Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code.</li>
+</ul>
 
 ```c++
 new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
@@ -149,9 +153,11 @@ Now that we have remote shell capabilities on our socket, lets wait for input (p
 
 The read syscall accept 3 arguments:
 
-File descriptor of our newly created socket
-Buffer - was assigned at the variables section of the code
-Number of bytes to read from the file descriptor into the buffer
+<ul>
+<li>File descriptor of our newly created socket</li>
+<li>Buffer - was assigned at the variables section of the code</li>
+<li>Number of bytes to read from the file descriptor into the buffer</li>
+</ul>
 
 We will then use the strcspn syscall to calculate the number of bytes in the buffer and and using strcmp syscall to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
 
@@ -170,9 +176,11 @@ So, if we have provided the correct password our program/shell will continue and
 
 The execve syscall executes a program using:
 
-Pathname of the executable or script to run
-A pointer to the filename/executable and arguments passed to the executable. We do not have any arguments in this case, so just the pointer to our executable
-Environmental variables for use by the program - We set this to NULL as we are not concerned with this
+<ul>
+<li>Pathname of the executable or script to run</li>
+<li>A pointer to the filename/executable and arguments passed to the executable. We do not have any arguments in this case, so just the pointer to our executable</li>
+<li>Environmental variables for use by the program - We set this to NULL as we are not concerned with this</li>
+</ul>
 
 ```c++
 execve(arguments[0], &arguments[0], NULL);
