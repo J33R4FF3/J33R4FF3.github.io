@@ -6,19 +6,22 @@ categories:
 
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately spawn a bind shell and require a password for connecting to it.
 
-To accomplish this goal, we need to take this process through 3 parts:
+<h4>To accomplish this goal, we will break this process into 3 parts:</h4>
+
 <ol>
-    <il>1. Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</il>
-    <il>2. Secondly, the C code needs to be ported to x86_64 Assembly code.</il>
-    <il>3. Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</il>
+    <li>Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</li>
+    <li>Secondly, the C code needs to be ported to x86_64 Assembly code.</li>
+    <li>Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</li>
 </ol>
 
-This blog post will consist of two parts:
+<h3>This blog post will consist of two parts:</h3>
 
-Part 1 - Writing a password protected bind shell in the C Programming Language
-Par 2 - Porting the C code to Linux 64-bit Assembly code and optimizing the code for use as shellcode
+<ul>
+    <li>Part 1 - Writing a password protected bind shell in the C Programming Language</li>
+    <li>Part 2 - Porting the C code to Linux 64-bit Assembly code and optimizing the code for use as shellcode</li>
+</ul>
 
-PART 1 - Writing a password protected bind shell for Linux in C
+<h2>PART 1 - Writing a password protected bind shell for Linux in C</h2>
  
 In this section, I will take you through a step-by-step process of coding a bind shell and will try my best to clarify it as best I can. Before we begin with this process though, let's make sure everybody knows what we are ultimately trying achieve.
 
