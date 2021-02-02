@@ -29,7 +29,7 @@ So let's get started in coding out the 7 stages.
 Stage 1 - Creating a new socket
 The skeleton code that we will be departing on this journey from can be seen below. This is essentially just declaring some variables, to be used later, as well as importing the necessary libraries we will be using in the code.
 
-```C
+```c++
 #include<stdlib.h>
 #include<string.h>
 #include<strings.h>
