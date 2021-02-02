@@ -21,7 +21,7 @@ The goal of the following blog post is to write shellcode for the Linux 64-bit a
     <li>Part 2 - Porting the C code to Linux 64-bit Assembly code and optimizing the code for use as shellcode</li>
 </ul>
 
-<h1>PART 1 - Writing a password protected bind shell for Linux in C</h1>
+<h2>PART 1 - Writing a password protected bind shell for Linux in C</h2>
  
 In this section, I will take you through a step-by-step process of coding a bind shell and will try my best to clarify it as best I can. Before we begin with this process though, let's make sure everybody knows what we are ultimately trying achieve.
 
@@ -45,7 +45,7 @@ In the process of creating a bind shell, we will be stepping through 7 stages:
 
 So let's get started in coding out the 7 stages.
 
-<h3>Stage 1 - Creating a new socket</h3>
+<h3><b>Stage 1 - Creating a new socket</b></h3>
 
 The skeleton code that we will be departing on this journey from can be seen below. This is essentially just declaring some variables, to be used later, as well as importing the necessary libraries we will be using in the code.
 
@@ -110,7 +110,7 @@ Backlog - Maximum number of pending connections in the queue
 listen(sock, 2);
 ```
 
-</h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
+<h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
 
 For this stage we will wait for connections on our newly created socket, using the accept syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
 
@@ -158,7 +158,7 @@ if (strcmp(arguments[3], buf) == 0)
 }
 ```
 
-<h3>Stage 7 - Spawn the shell, if password is correct<h3>
+<h3>Stage 7 - Spawn the shell, if password is correct</h3>
 
 So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the execve syscall, as specified in the variables section.
 
