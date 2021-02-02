@@ -58,7 +58,7 @@ plugins:
   - jekyll-include-cache
 
 author:
-  name   : "Hendrik van den Berg"
+  name   : "j33r4ff3"
   avatar : "/assets/images/bio-photo.jpg"
   bio    : "Red Teamer"
   links:
