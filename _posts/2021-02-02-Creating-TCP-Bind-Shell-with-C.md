@@ -74,9 +74,9 @@ Creating the socket is handled by the socket syscall. Syscall stands for System 
 Referring to the man page for socket, it requires 3 arguments:
 
 <ul>
-    <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)<li>
-    <li>Communication Type - We will use SOCK_STREAM (TCP)<li>
-    <li>The third argument does not concern us so we will only pass 0<li>
+    <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)</li>
+    <li>Communication Type - We will use SOCK_STREAM (TCP)</li>
+    <li>The third argument does not concern us so we will only pass 0</li>
 </ul>
 
 ```c++
@@ -90,10 +90,10 @@ The return value for the above syscall will be a file descriptor for the new soc
 In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
 
 <ul>
-    <li>The socket to bind to - We will use our new socket "sock"<li>
-    <li>Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.<li>
-    <li>Length of the data structure passed in argument 2. This was declared during the skeleton code stage.<li>
-<ul>
+    <li>The socket to bind to - We will use our new socket "sock"</li>
+    <li>Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.</li>
+    <li>Length of the data structure passed in argument 2. This was declared during the skeleton code stage.</li>
+</ul>
 
 ```c++
 server.sin_family = AF_INET; //Address Family
