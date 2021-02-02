@@ -54,7 +54,7 @@ Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)
 Communication Type - We will use SOCK_STREAM (TCP)
 The third argument does not concern us so we will only pass 0
 
-```C
+```c++
 sock = socket(AF_INET, SOCK_STREAM, 0);
 ```
 
@@ -65,7 +65,7 @@ The socket to bind to - We will use our new socket "sock"
 Data structure of the server/victim, which is essentially the IP Address and port that the bind syscall needs to use. This data structure consists of 4 members that are each explained below.
 Length of the data structure passed in argument 2. This was declared during the skeleton code stage.
 
-```C
+```c++
 server.sin_family = AF_INET; //Address Family
 server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
                                      //htons converts host byte order to network byte order
@@ -80,7 +80,7 @@ The listen syscall accepts 2 arguments:
 File descriptor of new socket in Stage 1
 Backlog - Maximum number of pending connections in the queue
 
-```C
+```c++
 listen(sock, 2);
 ```
 
@@ -91,7 +91,7 @@ The socket we are listening on
 Pointer to a sockaddr data structure - as discussed in stage 2. the difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. 
 Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code.
 
-```C
+```c++
 new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
 close(sock);
 ```
@@ -100,7 +100,7 @@ The return value of the accept syscall is a new file descriptor pointing to the 
 Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities
 For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the dup2 syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
 
-```C
+```c++
 dup2(new_sock, 0);
 dup2(new_sock, 1);
 dup2(new_sock, 2);
@@ -114,7 +114,7 @@ Buffer - was assigned at the variables section of the code
 Number of bytes to read from the file descriptor into the buffer
 We will then use the strcspn syscall to calculate the number of bytes in the buffer and and using strcmp to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
 
-```C
+```c++
 read(new_sock, buf, 16);
 buf[strcspn(buf, "\n")] = 0;
 if (strcmp(arguments[3], buf) == 0)
@@ -130,7 +130,7 @@ Pathname of the executable or script to run
 A pointer to the filename/executable and arguments passed to the executable. We do not have any arguments in this case, so just the pointer to our executable
 Environmental variables for use by the program - We set this to NULL as we are not concerned with this
 
-```C
+```c++
 execve(arguments[0], &arguments[0], NULL);
 ```
 
