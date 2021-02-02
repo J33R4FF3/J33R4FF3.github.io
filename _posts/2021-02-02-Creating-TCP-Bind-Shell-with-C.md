@@ -1,6 +1,5 @@
 ---
 title: "Writing a password protected bind shell in C"
-date: 2021-02-02
 categories:
   - blog
 ---
