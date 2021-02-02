@@ -1,6 +1,5 @@
 ---
 title: "Writing a password protected bind shell in C"
-link: https://man7.org/linux/man-pages/man2/socket.2.html
 categories:
   - blog
 ---
@@ -72,7 +71,7 @@ int main()
 
 Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. 
 
-Referring to the man page for [socket](1), it requires 3 arguments:
+Referring to the man page for [socket](https://man7.org/linux/man-pages/man2/socket.2.html), it requires 3 arguments:
 
 <ul>
     <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)</li>
@@ -121,7 +120,7 @@ listen(sock, 2);
 
 <h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
 
-For this stage we will wait for connections on our newly created socket, using the accept syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
+For this stage we will wait for connections on our newly created socket, using the [accept](https://man7.org/linux/man-pages/man2/accept.2.html) syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
 
 The accept syscall takes 3 arguments:
 
