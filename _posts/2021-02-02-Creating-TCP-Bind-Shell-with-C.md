@@ -14,35 +14,38 @@ The goal of the following blog post is to write shellcode for the Linux 64-bit a
     <li>Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</li>
 </ol>
 
-<h3>This blog post will consist of two parts:</h3>
+<h4>This blog post will consist of two parts:</h4>
 
 <ul>
     <li>Part 1 - Writing a password protected bind shell in the C Programming Language</li>
     <li>Part 2 - Porting the C code to Linux 64-bit Assembly code and optimizing the code for use as shellcode</li>
 </ul>
 
-<h2>PART 1 - Writing a password protected bind shell for Linux in C</h2>
+<h1>PART 1 - Writing a password protected bind shell for Linux in C</h1>
  
 In this section, I will take you through a step-by-step process of coding a bind shell and will try my best to clarify it as best I can. Before we begin with this process though, let's make sure everybody knows what we are ultimately trying achieve.
 
-What is a Bind Shell?
+<h3>What is a Bind Shell?</h3>
 
 A Bind Shell is created when a socket is created on the host and is then bound to a specific port. A Bash shell is then bound to this specific socket. This means that anybody connecting to the listener will be presented with a bash shell upon successful connection. The security implication here is that anybody can connect to the running listener, so if we can password protect the bind shells that we spawn then we can prevent arbitrary connections to it and provides us with more control.
 
-Creating the Bind Shell
+<h3>Creating the Bind Shell</h3>
 
 In the process of creating a bind shell, we will be stepping through 7 stages:
 
-Creating a new socket
-Binding the newly created socket to a port
-Listen for incoming connections on the newly created socket
-Wait for incoming connections on the newly created socket
-Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities.
-Wait for input (password) to be received and compare it against the correct password string
-Spawn the shell, if password is correct
+<ol>
+<li>Creating a new socket</li>
+<li>Binding the newly created socket to a port</li>
+<li>Listen for incoming connections on the newly created socket</li>
+<li>Wait for incoming connections on the newly created socket</li>
+<li>Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities.</li>
+<li>Wait for input (password) to be received and compare it against the correct password string</li>
+<li>Spawn the shell, if password is correct</li>
+</ol>
+
 So let's get started in coding out the 7 stages.
 
-Stage 1 - Creating a new socket
+<h3>Stage 1 - Creating a new socket</h3>
 
 The skeleton code that we will be departing on this journey from can be seen below. This is essentially just declaring some variables, to be used later, as well as importing the necessary libraries we will be using in the code.
 
@@ -78,7 +81,7 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 
 The return value for the above syscall will be a file descriptor for the new socket.
 
-Stage 2 - Binding the newly created socket to a port
+<h3>Stage 2 - Binding the newly created socket to a port</h3>
 
 In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
 
@@ -96,7 +99,7 @@ bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
-Stage 3 - Listen for incoming connections on the newly created socket
+<h3>Stage 3 - Listen for incoming connections on the newly created socket</h3>
 
 The listen syscall accepts 2 arguments:
 
@@ -107,7 +110,7 @@ Backlog - Maximum number of pending connections in the queue
 listen(sock, 2);
 ```
 
-Stage 4 - Wait for incoming connections on the newly created socket
+</h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
 
 For this stage we will wait for connections on our newly created socket, using the accept syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
 
@@ -124,7 +127,7 @@ close(sock);
 
 The return value of the accept syscall is a new file descriptor pointing to the newly created socket.
 
-Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities
+<h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
 For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the dup2 syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
 
@@ -134,7 +137,7 @@ dup2(new_sock, 1);
 dup2(new_sock, 2);
 ```
 
-Stage 6 - Wait for input (password) to be received and compare it against the correct password string
+<h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
 Now that we have remote shell capabilities on our socket, lets wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the read syscall.
 
@@ -155,7 +158,7 @@ if (strcmp(arguments[3], buf) == 0)
 }
 ```
 
-Stage 7 - Spawn the shell, if password is correct
+<h3>Stage 7 - Spawn the shell, if password is correct<h3>
 
 So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the execve syscall, as specified in the variables section.
 
