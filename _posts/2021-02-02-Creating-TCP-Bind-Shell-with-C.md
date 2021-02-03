@@ -10,7 +10,7 @@ The goal of the following blog post is to write shellcode for the Linux 64-bit a
 
 <ol>
     <li>Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</li>
-    <li>Secondly, the C code needs to be ported to x86_64 Assembly code.</li>
+    <li>Secondly, the C code needs to be ported to Linux x86_64 Assembly code.</li>
     <li>Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</li>
 </ol>
 
@@ -70,9 +70,9 @@ int main()
 }
 ```
 
-Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. The importance and intricacies of syscalls when it comes to shellcode/Assembly Language will be explained in Part 2 of this blog. 
+Creating the socket is handled by the [socket](https://man7.org/linux/man-pages/man2/socket.2.html) syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. The importance and intricacies of syscalls when it comes to shellcode/Assembly Language will be explained in Part 2 of this blog. 
 
-Referring to the man page for [socket](https://man7.org/linux/man-pages/man2/socket.2.html), it requires 3 arguments:
+Referring to the man page for socket, it requires 3 arguments:
 
 <ul>
     <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)</li>
@@ -121,13 +121,13 @@ listen(sock, 2);
 
 <h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
 
-For this stage we will wait for connections on our newly created socket, using the [accept](https://man7.org/linux/man-pages/man2/accept.2.html) syscall, and as soon as a connection is initiated, we will create new socket with the network information of the incoming connection and store it in a new variable. After the new socket is created, we will tear down or close the original socket.
+For this stage we will wait for connections on our newly created socket, using the [accept](https://man7.org/linux/man-pages/man2/accept.2.html) syscall, and as soon as a connection is initiated, we will create a new socket with the network information of the incoming connection and store it in a new variable ("new_sock"). After the new socket is created, we will tear down or close the original socket.
 
 The accept syscall takes 3 arguments:
 
 <ul>
 <li>The socket we are listening on</li>
-<li>Pointer to a sockaddr data structure - as discussed in stage 2. the difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. </li>
+<li>Pointer to a sockaddr data structure - as discussed in stage 2. The difference with this step is that the accept syscall will populate the 4 members of the data structure for us based on the incoming connection. </li>
 <li>Pointer to the size of the sockaddr structure in point above. This was already declared in the variables at the start of the code.</li>
 </ul>
 
@@ -140,7 +140,7 @@ The return value of the accept syscall is a new file descriptor pointing to the 
 
 <h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
-For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the [dup2](https://man7.org/linux/man-pages/man2/dup.2.html) syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
+For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities. The [dup2](https://man7.org/linux/man-pages/man2/dup.2.html) syscall will do nicely for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
 
 ```c++
 dup2(new_sock, 0);
@@ -150,9 +150,9 @@ dup2(new_sock, 2);
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-Now that we have remote shell capabilities on our socket, lets wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the [read](https://man7.org/linux/man-pages/man2/read.2.html) syscall.
+Now that we have remote shell capabilities on our socket, let's wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the [read](https://man7.org/linux/man-pages/man2/read.2.html) syscall.
 
-The read syscall accept 3 arguments:
+The read syscall accepts 3 arguments:
 
 <ul>
 <li>File descriptor of our newly created socket</li>
@@ -160,7 +160,7 @@ The read syscall accept 3 arguments:
 <li>Number of bytes to read from the file descriptor into the buffer</li>
 </ul>
 
-We will then use the strcspn syscall to calculate the number of bytes in the buffer and and using strcmp syscall to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
+We will then use the [strcspn](https://man7.org/linux/man-pages/man3/strcspn.3.html) syscall to calculate the number of bytes in the buffer and using the [strcmp](https://man7.org/linux/man-pages/man3/strcmp.3.html) syscall to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
 
 ```c++
 read(new_sock, buf, 16);
@@ -173,7 +173,7 @@ if (strcmp(arguments[3], buf) == 0)
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
 
-So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the [execve](https://man7.org/linux/man-pages/man2/execve.2.html) syscall, as specified in the variables section.
+So, if we have provided the correct password, our program/shell will continue and actually spawn our shell using the [execve](https://man7.org/linux/man-pages/man2/execve.2.html) syscall with the arguments that were configured in the variables section.
 
 The execve syscall executes a program using:
 
@@ -187,7 +187,7 @@ The execve syscall executes a program using:
 execve(arguments[0], &arguments[0], NULL);
 ```
 
-Hopefully, if we have done everything right, we will be presented with our remote shell capabilities on the victim. Personally, I prefer the fact that there is no prompt for a password as it adds an element of obscurity for somebody connecting to the shell without spawning it themselves.
+All we need to do now is compile the C code into an elf binary and execute it. Hopefully, if we have done everything right, we will be presented with our remote shell capabilities on the victim. Personally, I prefer the fact that there is no prompt for a password as it adds an element of obscurity for somebody connecting to the shell without spawning it themselves.
 
 The code for the password protected bind shell can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell).
 
