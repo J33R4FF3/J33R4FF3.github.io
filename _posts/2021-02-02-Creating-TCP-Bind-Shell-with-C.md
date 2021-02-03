@@ -1,5 +1,5 @@
 ---
-title: "Writing a password protected bind shell in C"
+title: "Implementing a password protected bind shell in Linux 64-bit Assembly shellcode - Part 1"
 categories:
   - blog
 ---
