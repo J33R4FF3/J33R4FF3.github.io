@@ -6,7 +6,7 @@ categories:
 
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately spawn a bind shell and require a password for connecting to it.
 
-<h4>To accomplish this goal, we will break this process into 3 parts:</h4>
+<h4>To accomplish this goal, we will break this process up into 3 parts:</h4>
 
 <ol>
     <li>Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</li>
@@ -69,7 +69,7 @@ int main()
 }
 ```
 
-Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. 
+Creating the socket is handled by the socket syscall. Syscall stands for System Call and is used to make requests from the user space into the Linux Kernel. The importance and intricacies of syscalls when it comes to shellcode/Assembly Language will be explained in Part 2 of this blog. 
 
 Referring to the man page for [socket](https://man7.org/linux/man-pages/man2/socket.2.html), it requires 3 arguments:
 
@@ -190,6 +190,6 @@ Hopefully, if we have done everything right, we will be presented with our remot
 
 The code for the password protected bind shell can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell).
 
-I hope I explained everything in enough detail for it to make a bit more sense to you as this is also an attempt at understanding the inner workings of bind and reverse shells better.
+I hope I explained everything in enough detail for it to make a bit more sense to you as this is also an attempt at understanding the inner workings of bind and reverse shells better myself.
 
 In [PART 2]() we will be discussing how to port all of the above to Linux x86_64 Assembly code so that we can use the shellcode when the situation presents itself. 
