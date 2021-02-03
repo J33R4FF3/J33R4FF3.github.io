@@ -87,7 +87,7 @@ The return value for the above syscall will be a file descriptor for the new soc
 
 <h3><strong>Stage 2 - Binding the newly created socket to a port</strong></h3>
 
-In this step we will assign an address to the newly created socket. We will use the bind syscall for this. The bind syscall again takes 3 arguments:
+In this step we will assign an address to the newly created socket. We will use the [bind](https://man7.org/linux/man-pages/man2/bind.2.html) syscall for this. The bind syscall again takes 3 arguments:
 
 <ul>
     <li>The socket to bind to - We will use our new socket "sock"</li>
@@ -107,7 +107,7 @@ bind(sock, (struct sockaddr *)&server, sockaddr_len);
 
 <h3>Stage 3 - Listen for incoming connections on the newly created socket</h3>
 
-The listen syscall accepts 2 arguments:
+The [listen](https://man7.org/linux/man-pages/man2/listen.2.html) syscall accepts 2 arguments:
 
 <ul>
 <li>File descriptor of new socket in Stage 1</li>
@@ -139,7 +139,7 @@ The return value of the accept syscall is a new file descriptor pointing to the 
 
 <h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
-For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the dup2 syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
+For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities and we will be using the [dup2](https://man7.org/linux/man-pages/man2/dup.2.html) syscall for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
 
 ```c++
 dup2(new_sock, 0);
@@ -149,7 +149,7 @@ dup2(new_sock, 2);
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-Now that we have remote shell capabilities on our socket, lets wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the read syscall.
+Now that we have remote shell capabilities on our socket, lets wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the [read](https://man7.org/linux/man-pages/man2/read.2.html) syscall.
 
 The read syscall accept 3 arguments:
 
@@ -172,7 +172,7 @@ if (strcmp(arguments[3], buf) == 0)
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
 
-So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the execve syscall, as specified in the variables section.
+So, if we have provided the correct password our program/shell will continue and actually spawn our shell, using the [execve](https://man7.org/linux/man-pages/man2/execve.2.html) syscall, as specified in the variables section.
 
 The execve syscall executes a program using:
 
@@ -192,4 +192,4 @@ The code for the password protected bind shell can be found [here](https://githu
 
 I hope I explained everything in enough detail for it to make a bit more sense to you as this is also an attempt at understanding the inner workings of bind and reverse shells better.
 
-In PART 2 we will be discussing how to port all of the above to Linux x86_64 Assembly code so that we can use the shellcode when the situation presents itself. 
+In [PART 2]() we will be discussing how to port all of the above to Linux x86_64 Assembly code so that we can use the shellcode when the situation presents itself. 
