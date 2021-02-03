@@ -43,6 +43,7 @@ In the process of creating a bind shell, we will be stepping through 7 stages:
 <li>Spawn the shell, if password is correct</li>
 </ol>
 
+
 So let's get started in coding out the 7 stages.
 
 <h3><b>Stage 1 - Creating a new socket</b></h3>
@@ -98,7 +99,7 @@ In this step we will assign an address to the newly created socket. We will use 
 ```c++
 server.sin_family = AF_INET; //Address Family
 server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
-                                     //htons converts host byte order to network byte order
+                                             //htons converts host byte order to network byte order
 server.sin_addr.s_addr = INADDR_ANY; //Netowrk interfaces to bind to, INADDR_ANY = All interfaces
 bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 
@@ -192,4 +193,4 @@ The code for the password protected bind shell can be found [here](https://githu
 
 I hope I explained everything in enough detail for it to make a bit more sense to you as this is also an attempt at understanding the inner workings of bind and reverse shells better myself.
 
-In [PART 2]() we will be discussing how to port all of the above to Linux x86_64 Assembly code so that we can use the shellcode when the situation presents itself. 
+In [PART 2](https://j33r4ff3.github.io/blog/Creating-TCP-Bind-Shell-with-C_2/) we will be discussing how to port all of the above to Linux x86_64 Assembly code so that we can use the shellcode when the situation presents itself. 
