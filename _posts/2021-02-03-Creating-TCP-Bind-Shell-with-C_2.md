@@ -1,5 +1,5 @@
 ---
-title: "Implementing a password protected bind shell in Linux 64-bit Assembly shellcode - Part 2"
+title: "Implementing a password protected bind shell in shellcode - Part 2"
 categories:
   - blog
 ---
@@ -89,6 +89,23 @@ Let's take our first stage code from Part 1 as an example to clarify further.
 sock = socket(AF_INET, SOCK_STREAM, 0);
 ```
 
-So from what we now know, if we wanted to write corresponding Assembly code for this C code then we will have to assign 41 (socket syscall number) to RAX, AF_INET to RDI, SOCK_STREAM to RSI and 0 to RDX and finally provide the 'syscall' instruction. We will be doing this quite a few times in the actual code so you have a few more chances to understand if this is still confusing.
+So from what we now know, if we wanted to write corresponding Assembly code for this C code then we will have to assign 41 (socket syscall number) to RAX, AF_INET to RDI, SOCK_STREAM to RSI and 0 to RDX and finally provide the 'syscall' instruction. One more thing to remember is that the return value of the syscall instruction is stored in the RAX register. We will be doing this quite a few times in the actual code so you have a few more chances to understand if this is still confusing.
 
 You can read up a bit further on how this works [here](https://www.cs.fsu.edu/~langley/CNT5605/2017-Summer/assembly-example/assembly.html).
+
+That about does it for the background knowledge. Let's get started with coding in Assembly.
+
+<h2>Writing a password protected bind shell in 64-bit Assembly</h2>
+
+```assembly
+global _start
+
+
+_start:
+```
+
+
+
+```c++
+sock = socket(AF_INET, SOCK_STREAM, 0)
+```
