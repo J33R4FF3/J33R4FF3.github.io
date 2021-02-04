@@ -97,7 +97,7 @@ That about does it for the background knowledge. Let's get started with coding i
 
 <h2>Writing a password protected bind shell in 64-bit Assembly</h2>
 
-```asm
+```x86asm
 global _start
 
 
