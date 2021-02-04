@@ -59,7 +59,22 @@ The stack a temporary storage location for use with common operations. The most 
 
 <h2>What are syscalls?</h2>
 
-If you can recall from Part 1, syscalls are System Calls that are used to make requests from the user space into the Linux Kernel. So how do we use syscalls with Assembly code? Well, syscalls have a set structure in machine language terms. Specific registers are used for specific arguments and then the 'syscall' instruction is given that will pass all the arguments in said registers. Below are the registers and what they are used for:
+If you can recall from Part 1, syscalls are System Calls that are used to make requests from the user space into the Linux Kernel. Each syscall has a permanent number assigned to it so that the linux kernel knows what you are trying to do when it receives the instruction. The full list of all syscalls and their associate numbers can be found [here](https://filippo.io/linux-syscall-table/). The syscall numbers that we used in our C program are as follows:
+
+```c++
+read == 0
+socket == 41
+bind == 49
+listen == 50
+accept == 43
+close == 3
+dup2 == 33
+execve == 59
+exit == 60
+```
+
+
+So how do we use syscalls with Assembly code? Well, syscalls have a set structure in machine language terms. Specific registers are used for specific arguments and then the 'syscall' instruction is then given that will pass all the arguments in said registers. Below are the registers and what they are used for:
 
 ```c++
 RAX -> system call number
@@ -68,4 +83,12 @@ RSI -> second argument
 RDX -> third argument
 ```
 
-Let's take an example from our C code to clarify further. If we take our 
+Let's take our first stage code from Part 1 as an example to clarify further.
+
+```c++
+sock = socket(AF_INET, SOCK_STREAM, 0);
+```
+
+So from what we now know, if we wanted to write corresponding Assembly code for this C code then we will have to assign 41 (socket syscall number) to RAX, AF_INET to RDI, SOCK_STREAM to RSI and 0 to RDX and finally provide the 'syscall' instruction. We will be doing this quite a few times in the actual code so you have a few more chances to understand if this is still confusing.
+
+You can read up a bit further on how this works [here](https://www.cs.fsu.edu/~langley/CNT5605/2017-Summer/assembly-example/assembly.html).
