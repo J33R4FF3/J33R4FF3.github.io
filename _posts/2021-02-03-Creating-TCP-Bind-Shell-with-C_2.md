@@ -16,3 +16,19 @@ Assembly is, in very basic terms, a low level programming language and is as clo
 
 <h2>What are Registers</h2>
 
+Registers are temporary storage areas that are built into the CPU. Registers can be used to store data, move data to and from other registers or move data to and from memory etc. The registers that we will working with primarily is:
+
+<ul>
+  <li>RAX</li>
+  <li>RBX</li>
+  <li>RCX</li>
+  <li>RDX</li>
+  <li>RSI</li>
+  <li>RDI</li>
+  <li>RSP</li>
+</ul>
+
+There are other registers too, R8 - R15 for instance, but we will not be working with these so much.
+
+It is also important to understand the structure of a register, especially when working with 64 bit registers. The reason why will become clearer when we reach the last phase of our process for generating shellcode. 
+
