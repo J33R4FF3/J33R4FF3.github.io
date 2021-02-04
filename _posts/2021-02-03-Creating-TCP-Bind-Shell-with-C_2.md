@@ -32,4 +32,23 @@ There are other registers too, R8 - R15 for instance, but we will not be working
 
 It is also important to understand the structure of a register, especially when working with 64 bit registers. The reason why will become clearer when we reach the last phase of our process for generating shellcode. 
 
-{% include figure image_path="/assets/images/registers.png" caption="64 bit register sizes." %}
+<table style="width:100%">
+  <tr>
+    <th>64-bit Register</th>
+    <th>Lower 32 bits</th>
+    <th>Lower 16 bits</th>
+    <th>Lower 8 bits</th>
+  </tr>
+  <tr>
+    <td>rax</td>
+    <td>eax</td>
+    <td>ax</td>
+    <td>al</td>
+  </tr>
+  <tr>
+    <td>rsi</td>
+    <td>esi</td>
+    <td>si</td>
+    <td>sil</td>
+  </tr>
+</table>
