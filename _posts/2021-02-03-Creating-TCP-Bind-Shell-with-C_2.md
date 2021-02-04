@@ -10,11 +10,11 @@ Now that we have the finalized code in C, we can begin the process of "convertin
 
 We need to do a little bit of homework before we can just jump into coding in Assembly and I will try my best to explain the needed background on the workings of Assembly, syscalls, registers and the stack.
 
-<h2>What is Assembly</h2>
+<h2>What is Assembly?</h2>
 
 Assembly is, in very basic terms, a low level programming language and is as close as you can get to actual machine language. Every type of computer architecture or even operating system will have its own assembly language due to the differences in instructions, registers and how it uses the stack. This blog specifically focuses on Linux x86_64 assembly.
 
-<h2>What are Registers</h2>
+<h2>What are Registers?</h2>
 
 Registers are temporary storage areas that are built into the CPU. Registers can be used to store data, move data to and from other registers or move data to and from memory etc. The registers that we will working with primarily is:
 
@@ -28,9 +28,9 @@ Registers are temporary storage areas that are built into the CPU. Registers can
   <li>RSP</li>
 </ul>
 
-There are other registers too, R8 - R15 for instance, but we will not be working with these so much.
+There are other registers to, R8 - R15 for instance, but we will not be working with these so much.
 
-It is also important to understand the structure of a register, especially when working with 64 bit registers. The reason why will become clearer when we reach the last phase of our process for generating shellcode. 
+It is also important to understand the structure of a register, especially when working with 64 bit registers. The reason why will become clearer when we reach the last phase of our process for generating shellcode. The important thing to remember is that a register can be broken up into smaller parts/bytes and based on this distinction, the name of the register changes. If we use 'rax' in our Assembly code then we will be referring to the full 64-bit register and if we use 'eax' in our Assembly code, we will be referring to only the lower 32 byte part of it. The below table should clarify the last statement:
 
 <table style="width:100%">
   <tr>
@@ -52,3 +52,20 @@ It is also important to understand the structure of a register, especially when 
     <td>sil</td>
   </tr>
 </table>
+
+<h2>What is the stack?</h2>
+
+The stack a temporary storage location for use with common operations. The most important attribute of the stack you need to know of is that it is LIFO (Last In First Out) and it grows from high memory to low memory. You can think of the stack as a stack of trays in a cafeteria where the last tray that was put on the top of the tray stack will be the one that the next customer takes off the stack to dish up. The register that keeps track of the stack is the RSP (Stack Pointer) Register.
+
+<h2>What are syscalls?</h2>
+
+If you can recall from Part 1, syscalls are System Calls that are used to make requests from the user space into the Linux Kernel. So how do we use syscalls with Assembly code? Well, syscalls have a set structure in machine language terms. Specific registers are used for specific arguments and then the 'syscall' instruction is given that will pass all the arguments in said registers. Below are the registers and what they are used for:
+
+```c++
+RAX -> system call number
+RDI -> first argument
+RSI -> second argument
+RDX -> third argument
+```
+
+Let's take an example from our C code to clarify further. If we take our 
