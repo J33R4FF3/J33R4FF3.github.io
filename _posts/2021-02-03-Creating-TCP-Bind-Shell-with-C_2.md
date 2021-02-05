@@ -376,3 +376,33 @@ whoami
 kali
 
 ```
+
+
+```bash
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ objdump -d pass.o | grep 00
+0000000000000000 <_start>:
+   0:   b8 29 00 00 00          mov    $0x29,%eax
+   5:   bf 02 00 00 00          mov    $0x2,%edi
+   a:   be 01 00 00 00          mov    $0x1,%esi
+   f:   ba 00 00 00 00          mov    $0x0,%edx
+  28:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+  33:   b8 31 00 00 00          mov    $0x31,%eax
+  3b:   ba 10 00 00 00          mov    $0x10,%edx
+  42:   b8 32 00 00 00          mov    $0x32,%eax
+  47:   be 02 00 00 00          mov    $0x2,%esi
+  4e:   b8 2b 00 00 00          mov    $0x2b,%eax
+  6b:   b8 03 00 00 00          mov    $0x3,%eax
+  72:   b8 21 00 00 00          mov    $0x21,%eax
+  7a:   be 00 00 00 00          mov    $0x0,%esi
+  81:   b8 21 00 00 00          mov    $0x21,%eax
+  86:   be 01 00 00 00          mov    $0x1,%esi
+  8d:   b8 21 00 00 00          mov    $0x21,%eax
+  92:   be 02 00 00 00          mov    $0x2,%esi
+  a1:   ba 10 00 00 00          mov    $0x10,%edx
+  a8:   48 8b 05 28 00 00 00    mov    0x28(%rip),%rax        # d7 <pass>
+  d0:   b8 3b 00 00 00          mov    $0x3b,%eax
+00000000000000d7 <pass>:
+00000000000000df <exit>:
+  df:   b8 3c 00 00 00          mov    $0x3c,%eax
+```
