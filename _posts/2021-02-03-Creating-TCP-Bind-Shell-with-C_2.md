@@ -261,7 +261,7 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-"db" (data byte) to allocate some space, and fill it with a string.
+For this step, we will define a password and then load that password into a register and compare the string with whatever is passed back from the incoming connection. We define the password with "db" or data byte so as to allocate some space, and fill it with a string. We will fetch this string using the RIP Relative Addressing method only available in 64-bit Assembly. Relative addressing will compute the address of the pass variable relative to the RIP (instruction pointer) and we can then just load this variable by using the 'rel pass' notation. 
 
 ```c
 read(new_sock, buf, 16);
@@ -273,21 +273,18 @@ if (strcmp(arguments[3], buf) == 0)
 
 ```nasm
 xor rax, rax ;zero out rax - read syscall number = 0
-
 push r10 ;push 8 bytes to the stack for 16 byte password support
-push r11 ;push another 8 bytes to the stack for 16 byte password support
-mov rsi, rsp
+mov rsi, rsp ;move the stack pointer to the 16 bytes into rsi for second argument 
+mov rdx, 16 ;move the value 16 into rdx as third argument
+syscall ;syscall read instruction
 
-mov rdx, 16
-syscall
-
-mov rax, [rel pass]
-mov rdi, rsi
-scasq
+mov rax, [rel pass] ;load password variable into rax
+mov rdi, rsi ;load the 8 bytes received from the client into rdi
+scasq ;scasq will compare rax with rdi 
 jne exit
 
 ; change as needed
-pass: db "16bytessssss" ;define a password
+pass: db "8bytesss" ;define a password
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
