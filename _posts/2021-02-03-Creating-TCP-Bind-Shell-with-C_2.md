@@ -175,8 +175,8 @@ bzero(&server.sin_zero, 8);
 ```nasm
 xor rax, rax ;zero out the rax register
 
-push rax ;push the 8 zero bytes in rax to the stack for bzero
-mov dword [rsp-4], eax ; move 4 bytes (because eax is the 32-bit part of rax) of 0's onto the stack at stack pointer - 4 bytes
+push rax ;push the 8 zero bytes, in rax, to the stack for bzero
+mov dword [rsp-4], eax ; move 4 bytes (because eax is the 32-bit part of rax) of 0's onto the stack (INADDR_ANY = int 0) at stack pointer - 4 bytes
 mov word [rsp-6], 0x5c11 ; move the port value onto the stack - 2 bytes
 mov word [rsp-8], 0x2 ;move the value 2 (for AF_INET) on the stack at stack pointer - 8 bytes
 sub rsp, 8 ;adjust the stack pointer by 8 bytes for the above 3 commands so that RSP points to the beginning of our Data Structure
@@ -184,4 +184,50 @@ sub rsp, 8 ;adjust the stack pointer by 8 bytes for the above 3 commands so that
 
 ```c 
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
+```
+
+Ok, now that RSP is pointing to your constructed Data Structure, let's write the syscall instructions.
+
+```nasm
+mov rax, 49 ;syscall number for bind
+mov rsi, rsp ;mov rsp (pointer to our data structure) into rsi as second argument. Remember rdi is already set with the first argument
+mov rdx, 16 ; mov 16 into rdx for sockaddr_len. 8 zero bytes + 4 bytes INADDR_ANY + 2 bytes port + 2 bytes AF_INET = 16 bytes
+syscall ;syscall bind instruction
+```
+
+
+<h3>Stage 3 - Listen for incoming connections on the newly created socket</h3>
+
+Our listen syscall is straight forward.
+
+```c
+listen(sock, 2);
+```
+
+```nasm
+mov rax, 50 ;syscall number for listen
+mov rsi, 2 ;move value of 2 into rsi for second argument.
+syscall ;syscall listen instruction
+```
+
+<h3>Stage 4 - Wait for incoming connections on the newly created socket</h3>
+
+```c
+new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
+close(sock);
+```
+
+```nasm
+mov rax, 43
+sub rsp, 16
+mov rsi, rsp
+mov byte [rsp-1], 16
+sub rsp, 1
+mov rdx, rsp
+syscall
+        
+mov r9, rax
+
+mov rax, 3
+syscall
 ```
