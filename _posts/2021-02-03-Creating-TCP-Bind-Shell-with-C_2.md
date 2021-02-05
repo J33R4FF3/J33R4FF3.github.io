@@ -97,15 +97,36 @@ That about does it for the background knowledge. Let's get started with coding i
 
 <h2>Writing a password protected bind shell in 64-bit Assembly</h2>
 
+Now that we are ready to start the actual Assembly code, let's create the skeleton for our program and define the different areas of code we will be using:
+
 ```nasm
 global _start
 
 
 _start:
+
+exit:
+
 ```
-
-
+<h3>Creating a socket</h3>
 
 ```c++
 sock = socket(AF_INET, SOCK_STREAM, 0)
 ```
+
+We have pretty much already finished this part of the code in our example above, but we still need to figure out how to pass arguments like AF_INET into assembly. Syscall arguments like these have a pre-defined constant assigned to them just like syscalls do. An easy way for us to find out what these values are, is to use python to do this work for us. Have a look at the following:
+
+```python
+Python 2.7.15+ (default, Jul  9 2019, 16:51:35)
+[GCC 7.4.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+ >>> import socket
+ >>> socket.AF_INET
+ 2
+ >>> socket.SOCK_STREAM
+ 1
+```
+
+From the python output above, we can see that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So lets put together our first block of assembly code.
+
+
