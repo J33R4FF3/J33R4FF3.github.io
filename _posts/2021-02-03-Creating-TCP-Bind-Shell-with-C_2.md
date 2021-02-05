@@ -236,6 +236,8 @@ syscall ;syscall close instruction
 
 <h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
+This one straight forward again, we just need to use dup2 three times for mapping the shell capabilities. you should be able to do these three by yourself now so no explanations in the code this time. The only thing to remember is that we have have stored our "new_sock" file descriptor in r9, so we will just move that into rdi for the first syscall and then keep it there for the subsequent two dup2 syscalls.
+
 ```c
 dup2(new_sock, 0);
 dup2(new_sock, 1);
