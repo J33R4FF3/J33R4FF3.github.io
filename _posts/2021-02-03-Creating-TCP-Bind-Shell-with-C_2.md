@@ -333,22 +333,22 @@ execve(arguments[0], &arguments[0], NULL);
 ```
 
 ```nasm
-        xor rax, rax ;zero out rax
-        push rax ;push 8 zero bytes onto the stack for third argument 
+xor rax, rax ;zero out rax
+push rax ;push 8 zero bytes onto the stack for third argument 
 
-        mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
-        push rbx ;push the value onto the stack
+mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
+push rbx ;push the value onto the stack
 
-        mov rdi, rsp ;the stack pointer now points to the address of /bin//sh and 8 zero bytes on the stack so lets move that to rdi for first argument
+mov rdi, rsp ;the stack pointer now points to the address of /bin//sh and 8 zero bytes on the stack so lets move that to rdi for first argument
 
-        push rax ; Lets add another 8 zero bytes on the stack
+push rax ; Lets add another 8 zero bytes on the stack
 
-        mov rdx, rsp ; the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
+mov rdx, rsp ; the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
 
-        push rdi ; rdi is currently pointing to the address of /bin//sh so lets put that on the stack
-        mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
-        mov rax, 59 ;syscall number for execve
-        syscall ;execve syscall instruction
+push rdi ; rdi is currently pointing to the address of /bin//sh so lets put that on the stack
+mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
+mov rax, 59 ;syscall number for execve
+syscall ;execve syscall instruction
 ```
 
 Ok, that last part was quite a confusing bit, but after a few times you should get it.
