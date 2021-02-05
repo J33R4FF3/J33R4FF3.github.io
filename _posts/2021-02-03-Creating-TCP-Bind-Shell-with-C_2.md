@@ -108,7 +108,7 @@ _start:
 exit:
 
 ```
-<h3>Creating a socket</h3>
+<h3>Stage 1 - Creating a socket</h3>
 
 ```c++
 sock = socket(AF_INET, SOCK_STREAM, 0)
@@ -129,4 +129,23 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 From the python output above, we can see that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So lets put together our first block of assembly code.
 
+```nasm
+mov rax, 41 ;Syscall number for socket
+mov rdi, 2 ;Value for AF_INET
+mov rsi, 1 ;Value for SOCK_STREAM
+mov rdx, 0 ;Third argument where we need to pass a 0
+syscall
+```
 
+If the above code block does not make sense, please review the "What are syscalls section".
+
+<h3>Stage 2 - Binding the newly created socket to a port</h3>
+
+```c
+server.sin_family = AF_INET;
+server.sin_port = htons(atoi(arguments[2]));
+server.sin_addr.s_addr = INADDR_ANY;
+bzero(&server.sin_zero, 8);
+        
+bind(sock, (struct sockaddr *)&server, sockaddr_len);
+```
