@@ -261,7 +261,7 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-For this step, we will define a password and then load that password into a register and compare the string with whatever is passed back from the incoming connection. We define the password with "db" or data byte so as to allocate some space, and fill it with a string. We will fetch this string using the RIP Relative Addressing method only available in 64-bit Assembly. Relative addressing will compute the address of the pass variable relative to the RIP (instruction pointer) and we can then just load this variable by using the ```nasm rel pass``` notation. 
+For this step, we will define a password and then load that password into a register and compare the string with whatever is passed back from the incoming connection. We define the password with "db" or data byte so as to allocate some space, and fill it with a string. We will fetch this string using the RIP Relative Addressing method only available in 64-bit Assembly. Relative addressing will compute the address of the pass variable relative to the RIP (instruction pointer) and we can then just load this variable by using the ```rel pass``` notation. 
 
 ```c
 read(new_sock, buf, 16);
@@ -288,6 +288,31 @@ pass: db "8bytesss" ;define a password
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
+
+So, if we entered the correct password then the code would have jumped over the jne (jump if not equal) instruction and continued on to our execve code where we will actually launch our /bin/sh shell. We will once again be using the stack for this one and to do this we need to clearly understand how execve accepts the arguments.
+
+<table style="width:100%">
+  <tr>
+    <th>First Argument</th>
+    <th>Second Argument</th>
+    <th>Third Argument</th>
+  </tr>
+  <tr>
+    <th>rdi</th>
+    <th>rsi</th>
+    <th>rdx</th>
+  </tr>
+  <tr>
+    <td>pathname - Filename of executable and optional arguments</td>
+    <td>argv - Pointer to the address of our filneame and optional commandline arguments</td>
+    <td>envp - Optional environmental variables</td>
+  </tr>
+  <tr>
+    <td>/bin/sh, 0x0</td>
+    <td>0x0000000000000000</td>
+    <td>Address of /bin/sh, 0x0000000000000000</td>
+  </tr>
+</table>
 
 ```c
 execve(arguments[0], &arguments[0], NULL);
