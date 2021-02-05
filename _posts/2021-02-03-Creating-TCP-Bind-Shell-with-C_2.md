@@ -440,6 +440,8 @@ Segmentation fault
 
 <h2>Removing null bytes from generated shellcode</h2>
 
+We can easily see which instructions are null byte culprits by using object dump and searching for '00'. So having a look at the below it is clear that the problem is mostly our 'mov' commands.
+
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
 └─$ objdump -d pass.o | grep 00
@@ -468,3 +470,5 @@ Segmentation fault
 00000000000000df <exit>:
   df:   b8 3c 00 00 00          mov    $0x3c,%eax
 ```
+
+This is because in 64-bit architectures, if we only assign a 32-bit value to the 64-bit register then the other 32-bits are zeroed/padded out. If we were to only use the 8-bit or 16-bit part of the register, then the upper 56 bits or 48 bits, respectively, are not modified. So, if you refer back to the "What are registers?" section, then we can rather use al or ah rather than the full rax register for instance. So let's see how far we get by using this technique.
