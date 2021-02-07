@@ -102,12 +102,14 @@ Now that we are ready to start the actual Assembly code, let's create the skelet
 ```nasm
 global _start
 
+section .text
 
 _start:
 
 exit:
 
 ```
+
 <h3>Stage 1 - Creating a socket</h3>
 
 ```c++
@@ -205,6 +207,7 @@ listen(sock, 2);
 ```
 
 ```nasm
+xor rsi, rsi ;make sure rsi is zero before continuing
 mov rax, 50 ;syscall number for listen
 mov rsi, 2 ;move value of 2 into rsi for second argument.
 syscall ;syscall listen instruction
@@ -261,7 +264,17 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-For this step, we will define a password and then load that password into a register and compare the string with whatever is passed back from the incoming connection. We define the password with "db" or data byte so as to allocate some space, and fill it with a string. We will fetch this string using the RIP Relative Addressing method only available in 64-bit Assembly. Relative addressing will compute the address of the pass variable relative to the RIP (instruction pointer) and we can then just load this variable by using the ```rel pass``` notation. 
+For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
+
+```python
+>>> password = '8bytesss'
+>>> len(password)
+8
+>>> password[::-1]
+'sssetyb8'
+>>> password[::-1].encode('hex')
+'7373736574796238'
+```
 
 ```c
 read(new_sock, buf, 16);
@@ -273,20 +286,19 @@ if (strcmp(arguments[3], buf) == 0)
 
 ```nasm
         xor rax, rax ;zero out rax - read syscall number = 0
-        push r10 ;push 8 bytes to the stack for 16 byte password support
-        mov rsi, rsp ;move the stack pointer to the 16 bytes into rsi for second argument 
-        mov rdx, 16 ;move the value 16 into rdx as third argument
+        push r10 ;push 8 zero bytes to the stack to store the incoming password
+        mov rsi, rsp ;move the stack pointer to the 8 bytes into rsi for second argument 
+        mov rdx, 8 ;move the value 8 into rdx as third argument
         syscall ;syscall read instruction
 
-        mov rax, [rel pass] ;load password variable into rax
+        xor rax, rax
+        mov rax, 0x7373736574796238 ;load password into rax in reverse order
         mov rdi, rsi ;load the 8 bytes received from the client into rdi
         scasq ;scasq will compare rax with rdi 
         jne exit ;if the two strings contained within rax and rdi do not match, then jump to our exit syscall instruction
 
-        ; change as needed
-        pass: db "8bytesss" ;define a password
-
 exit:
+        xor rax, rax ;zero out rax in case of any remnant values before attempting to exit
         mov rax, 60 ;syscall number for exit = 60
         syscall ;syscall exit instruction
 ```
