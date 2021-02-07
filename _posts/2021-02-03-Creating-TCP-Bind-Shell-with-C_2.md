@@ -450,15 +450,15 @@ int main()
 }
 ```
 
-If we compile this new program and run it, we see that we get a segmentation fault and the length is given as 2 bytes. We can see that the program gave us a segmentation fault as soon as it hit the 3rd byte x00. This is because null bytes are not allowed in shellcode as it represents "End Of String". As a last step, we need to make sure that we remove all null bytes from our shellcode.
+If we compile this new program and run it, we see that we get a shellcode length of 3 bytes. This is obviously not correct and this is because null bytes are not allowed in shellcode as it represents "End Of String" and we need to make sure we get rid of all 0x00 bytes. As a last step, we need to make sure that we remove all null bytes from our shellcode.
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
 └─$ gcc -fno-stack-protector -z execstack shellcode.c -o shellcode         
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
 └─$ ./shellcode                                                            
-Shellcode Length:  2
-Segmentation fault
+Shellcode Length:  3
+
 ```
 
 <h2>Removing null bytes from generated shellcode</h2>
@@ -476,22 +476,19 @@ We can easily see which instructions are null byte culprits by using object dump
   28:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
   33:   b8 31 00 00 00          mov    $0x31,%eax
   3b:   ba 10 00 00 00          mov    $0x10,%edx
-  42:   b8 32 00 00 00          mov    $0x32,%eax
-  47:   be 02 00 00 00          mov    $0x2,%esi
-  4e:   b8 2b 00 00 00          mov    $0x2b,%eax
-  6b:   b8 03 00 00 00          mov    $0x3,%eax
-  72:   b8 21 00 00 00          mov    $0x21,%eax
-  7a:   be 00 00 00 00          mov    $0x0,%esi
-  81:   b8 21 00 00 00          mov    $0x21,%eax
-  86:   be 01 00 00 00          mov    $0x1,%esi
-  8d:   b8 21 00 00 00          mov    $0x21,%eax
-  92:   be 02 00 00 00          mov    $0x2,%esi
-  a1:   ba 10 00 00 00          mov    $0x10,%edx
-  a8:   48 8b 05 28 00 00 00    mov    0x28(%rip),%rax        # d7 <pass>
-  d0:   b8 3b 00 00 00          mov    $0x3b,%eax
-00000000000000d7 <pass>:
-00000000000000df <exit>:
-  df:   b8 3c 00 00 00          mov    $0x3c,%eax
-```
+  45:   b8 32 00 00 00          mov    $0x32,%eax
+  4a:   be 02 00 00 00          mov    $0x2,%esi
+  51:   b8 2b 00 00 00          mov    $0x2b,%eax
+  6e:   b8 03 00 00 00          mov    $0x3,%eax
+  75:   b8 21 00 00 00          mov    $0x21,%eax
+  7d:   be 00 00 00 00          mov    $0x0,%esi
+  84:   b8 21 00 00 00          mov    $0x21,%eax
+  89:   be 01 00 00 00          mov    $0x1,%esi
+  90:   b8 21 00 00 00          mov    $0x21,%eax
+  95:   be 02 00 00 00          mov    $0x2,%esi
+  a7:   ba 08 00 00 00          mov    $0x8,%edx
+  dc:   b8 3b 00 00 00          mov    $0x3b,%eax
+00000000000000e3 <exit>:
+  e6:   b8 3c 00 00 00          mov    $0x3c,%eax```
 
 This is because in 64-bit architectures, if we only assign a 32-bit value to the 64-bit register then the other 32-bits are zeroed/padded out. If we were to only use the 8-bit or 16-bit part of the register, then the upper 56 bits or 48 bits, respectively, are not modified. So, if you refer back to the "What are registers?" section, then we can rather use al or ah rather than the full rax register for instance. So let's see how far we get by using this technique.
