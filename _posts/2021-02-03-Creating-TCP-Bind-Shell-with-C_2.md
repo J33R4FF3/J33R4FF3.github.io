@@ -489,6 +489,7 @@ We can easily see which instructions are null byte culprits by using object dump
   a7:   ba 08 00 00 00          mov    $0x8,%edx
   dc:   b8 3b 00 00 00          mov    $0x3b,%eax
 00000000000000e3 <exit>:
-  e6:   b8 3c 00 00 00          mov    $0x3c,%eax```
+  e6:   b8 3c 00 00 00          mov    $0x3c,%eax
+```
 
 This is because in 64-bit architectures, if we only assign a 32-bit value to the 64-bit register then the other 32-bits are zeroed/padded out. If we were to only use the 8-bit or 16-bit part of the register, then the upper 56 bits or 48 bits, respectively, are not modified. So, if you refer back to the "What are registers?" section, then we can rather use al or ah rather than the full rax register for instance. So let's see how far we get by using this technique.
