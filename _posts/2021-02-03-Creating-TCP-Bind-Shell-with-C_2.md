@@ -8,7 +8,7 @@ Now that we have the finalized code in C, we can begin the process of "convertin
 
 <h3>Background</h3>
 
-We need to do a little bit of homework before we can just jump into coding in Assembly and I will try my best to explain the needed background on the workings of Assembly, syscalls, registers and the stack.
+We need to do a little bit of homework before we can just jump into coding in Assembly and I will try my best to explain the needed background on the workings of Assembly, syscalls, registers and the Stack.
 
 <h2>What is Assembly?</h2>
 
@@ -16,7 +16,7 @@ Assembly is, in very basic terms, a low level programming language and is as clo
 
 <h2>What are Registers?</h2>
 
-Registers are temporary storage areas that are built into the CPU. Registers can be used to store data, move data to and from other registers or move data to and from memory etc. The registers that we will working with primarily is:
+Registers are temporary storage areas that are built into the CPU. Registers can be used to store data, move data to and from other registers or move data to and from memory etc. The registers that we will be working with primarily is:
 
 <ul>
   <li>RAX</li>
@@ -28,7 +28,7 @@ Registers are temporary storage areas that are built into the CPU. Registers can
   <li>RSP</li>
 </ul>
 
-There are other registers to, R8 - R15 for instance, but we will not be working with these so much.
+There are other registers too, R8 - R15 for instance, but we will not be working with these so much.
 
 It is also important to understand the structure of a register, especially when working with 64 bit registers. The reason why will become clearer when we reach the last phase of our process for generating shellcode. The important thing to remember is that a register can be broken up into smaller parts/bytes and based on this distinction, the name of the register changes. If we use 'rax' in our Assembly code then we will be referring to the full 64-bit register and if we use 'eax' in our Assembly code, we will be referring to only the lower 32 byte part of it. The below table should clarify the last statement:
 
@@ -55,11 +55,11 @@ It is also important to understand the structure of a register, especially when 
 
 <h2>What is the stack?</h2>
 
-The stack a temporary storage location for use with common operations. The most important attribute of the stack you need to know of is that it is LIFO (Last In First Out) and it grows from high memory to low memory. You can think of the stack as a stack of trays in a cafeteria where the last tray that was put on the top of the tray stack will be the one that the next customer takes off the stack to dish up. The register that keeps track of the stack is the RSP (Stack Pointer) Register.
+The stack is a temporary storage location for use with common operations. The most important attribute of the stack, you need to know of, is that it is LIFO (Last In First Out) and it grows from high memory to low memory. You can think of the stack as a stack of trays in a cafeteria where the last tray that was put on the top of the tray stack will be the one that the next customer takes off the stack first. The register that keeps track of the stack is the RSP (Stack Pointer) Register.
 
 <h2>What are syscalls?</h2>
 
-If you can recall from Part 1, syscalls are System Calls that are used to make requests from the user space into the Linux Kernel. Each syscall has a permanent number assigned to it so that the linux kernel knows what you are trying to do when it receives the instruction. The full list of all syscalls and their associate numbers can be found [here](https://filippo.io/linux-syscall-table/). The syscall numbers that we used in our C program are as follows:
+If you can recall from Part 1, syscalls are System Calls that are used to make requests from the user space into the Linux Kernel. Each syscall has a permanent number assigned to it so that the linux kernel knows what you are trying to do when it receives the instruction. The full list of all syscalls and their associated numbers can be found [here](https://filippo.io/linux-syscall-table/). The syscall numbers that we used in our C program are as follows:
 
 ```c++
 read == 0
@@ -74,7 +74,7 @@ exit == 60
 ```
 
 
-So how do we use syscalls with Assembly code? Well, syscalls have a set structure in machine language terms. Specific registers are used for specific arguments and then the 'syscall' instruction is then given that will pass all the arguments in said registers. Below are the registers and what they are used for:
+So how do we use syscalls with Assembly code? Well, syscalls have a set structure in machine language terms. Specific registers are used for specific arguments and then the 'syscall' instruction is given that will pass all the arguments in said registers. Below are the registers and what they are used for:
 
 ```c++
 RAX -> system call number
@@ -129,7 +129,7 @@ Type "help", "copyright", "credits" or "license" for more information.
  1
 ```
 
-From the python output above, we can see that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So lets put together our first block of assembly code.
+From the python output above, we can see that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So let's put together our first block of assembly code.
 
 ```nasm
 mov rax, 41 ;Syscall number for socket
@@ -184,11 +184,11 @@ mov word [rsp-8], 0x2 ;move the value 2 (for AF_INET) on the stack at stack poin
 sub rsp, 8 ;adjust the stack pointer by 8 bytes for the above 3 commands so that RSP points to the beginning of our Data Structure
 ```
 
+Ok, now that RSP is pointing to our constructed Data Structure, let's write the syscall instructions.
+
 ```c 
 bind(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
-
-Ok, now that RSP is pointing to our constructed Data Structure, let's write the syscall instructions.
 
 ```nasm
 mov rax, 49 ;syscall number for bind
@@ -220,7 +220,7 @@ new_sock = accept(sock, (struct sockaddr *)&client, &sockaddr_len);
 close(sock);
 ```
 
-For the client sockaddr Data Strucute we only need to reserve space on the stack to hold the client data as accept will populate the information for us. After we have our "new_sock", return value of the accept syscall stored in rax, we need to also close the original socket.
+For the client sockaddr Data Strucute we only need to reserve space on the stack to hold the client data, as the accept syscall will populate the information for us. After we have our "new_sock" (return value of the accept syscall stored in rax), we need to also close the original socket.
 
 ```nasm
 mov rax, 43 ;syscall number for accept
@@ -264,7 +264,7 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
+For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. Another important attribute of the 64-bit architecture is that it is little-endian, which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass the string '8bytesss', then we need to pass it as'sssetyb8' and in hex format. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
 
 ```python
 >>> password = '8bytesss'
@@ -330,7 +330,7 @@ So, if we entered the correct password then the code would have jumped over the 
   </tr>
 </table>
 
-We are using the stack so we will have to construct this command in reverse order. Another important attribute of the 64-bit architecture is that it is little-endian which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass /bin//sh (we add a / to make it a nice 8 bytes, this has no affect on how the OS interprets it), then we need to pass it as hs//nib/ and in hex format. We can easily use python for this once again though.
+We are using the stack so we will have to construct this command in reverse order. Remember that if we want to pass /bin//sh (we add a / to make it a nice 8 bytes, this has no affect on how the OS interprets it), then we need to pass it as hs//nib/ and in hex format. We can easily use python for this once again though.
 
 ```python
 shell = '/bin//sh'
