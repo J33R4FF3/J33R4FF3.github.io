@@ -492,4 +492,24 @@ We can easily see which instructions are null byte culprits by using object dump
   e6:   b8 3c 00 00 00          mov    $0x3c,%eax
 ```
 
-This is because in 64-bit architectures, if we only assign a 32-bit value to the 64-bit register then the other 32-bits are zeroed/padded out. If we were to only use the 8-bit or 16-bit part of the register, then the upper 56 bits or 48 bits, respectively, are not modified. So, if you refer back to the "What are registers?" section, then we can rather use al or ah rather than the full rax register for instance. So let's see how far we get by using this technique.
+This is because in 64-bit architectures, if we only assign a 32-bit value to the 64-bit register then the other 32-bits are zeroed/padded out. If we were to only use the 8-bit or 16-bit part of the register, then the upper 56 bits or 48 bits, respectively, are not modified. So, if you refer back to the "What are registers?" section, then we can rather use al or ah rather than the full rax register for instance. So let's see how far we get by using the following alternatives with our move instructions.
+
+```nasm
+mov rax, 41 --> mov al, 41
+mov rdx, 16 --> mov dl, 16
+mov rsi, 2 --> mov sil, 2
+mov rdi, 2 --> mov dil, 2
+```
+
+After we substitute all the registers, we are left with the following:
+
+```bash
+┌──(kali㉿kali)-[~/pass_bind_nasm]
+└─$ objdump -d pass.o | grep 00
+0000000000000000 <_start>:
+   8:   ba 00 00 00 00          mov    $0x0,%edx
+  21:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+  62:   be 00 00 00 00          mov    $0x0,%esi
+00000000000000b8 <exit>:
+```
+
