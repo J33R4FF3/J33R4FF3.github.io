@@ -6,12 +6,12 @@ categories:
 
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately connect back to a remote machine and spawn a shell as well as requiring a password before any commands can be run inside the shell.
 
-This blog post will follow a similar process to the bind shell process, but should be a little shorter seeing as a reverse shell is a little easier to implement in C and Assembly.
+This blog post will follow a similar process to the bind shell process, but should be a little shorter seeing as a reverse shell is a little easier to implement in C and Assembly and because you should now be a little more familiar with most of the concepts.
 
 We will step through the process again following the same framework:
 
 <ol>
-  <li>Firstly, we need to write the code, in the C Programming Language, for creating a socket and password protecting it.</li>
+  <li>Firstly, we need to write the code, in the C Programming Language, for creating a socket and then connecting to a remote machine and password protecting it.</li>
   <li>Secondly, the C code needs to be ported to Linux x86_64 Assembly code.</li>
   <li>Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</li>
 </ol>
