@@ -6,7 +6,7 @@ categories:
 
 The goal of the following blog post is to write shellcode for the Linux 64-bit architecture that will ultimately connect back to a remote machine and spawn a shell as well as requiring a password before any commands can be run inside the shell.
 
-This blog post will follow a similar process to the bind shell process, but should be a little shorter seeing as a reverse shell is a little easier to implement in C and Assembly and because you should now be a little more familiar with most of the concepts.
+This blog post will follow a similar process to the bind shell process, but should be a little shorter seeing as a reverse shell is a little easier to implement in C, and Assembly, and because you should now be a little more familiar with most of the concepts.
 
 We will step through the process again following the same framework:
 
@@ -15,6 +15,16 @@ We will step through the process again following the same framework:
   <li>Secondly, the C code needs to be ported to Linux x86_64 Assembly code.</li>
   <li>Lastly, all Null bytes need to be removed from the Assembly code and we need to look for opportunities to optimize our shellcode to keep the final payload as small as possible.</li>
 </ol>
+
+<h2>Writing a password protected reverse shell for Linux in C</h2>
+
+<h3>What is a reverse shell?</h3>
+
+A reverse shell is when a victim machine initiates a connection back to the attacker controller machine and spawns a shell upon connection. The reason we would want to use a reverse shell rather than a bind shell is usually to get past a firewall, that do not allow incoming connections, or a NAT solution. If we were to leave our compiled reverse shell lying around on a server that we tested for instance, then anybody would be able to use it. That is if the compiled binary accepts arguments, which ours does not in this case, but it should illustrate the point. In such a case, we hardcode the password so at least they will need to reverse engineer the binary, to find the password, before they can execute commands on the connect-back.
+
+
+
+
 
 ```c
 #include<stdio.h>
