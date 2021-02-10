@@ -192,9 +192,9 @@ mov rax, 41 ;Syscall number for socket
 mov rdi, 2 ;Value for AF_INET
 mov rsi, 1 ;Value for SOCK_STREAM
 mov rdx, 0 ;Third argument where we need to pass a 0
-syscall //Give the syscall instruction
+syscall ;Give the syscall instruction
 
-mov rdi, rax //store file descriptor that is returned by the syscall in rdi for future use.
+mov rdi, rax ;store file descriptor that is returned by the syscall in rdi for future use.
 ```
 
 Again, if the block of code above makes no sense to you then go and read the previous blogposts first.
