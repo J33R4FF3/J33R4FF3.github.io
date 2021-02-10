@@ -149,9 +149,11 @@ The execve syscall executes a program using:
 
 All we need to do now is compile the C code into an elf binary and execute it. Hopefully, if we have done everything right, we will be presented with a shell upon connection back to our remote IP.
 
-The code for the password protected bind shell can be found [here](https://github.com/J33R4FF3/Pass_Rev_Shell).
+The code for the password protected reverse shell can be found [here](https://github.com/J33R4FF3/Pass_Rev_Shell).
 
+<h2>Writing a password protected reverse shell in 64-bit Assembly</h2>
 
+If you have not, by now, read the blogpost [here](https://j33r4ff3.github.io/blog/Creating-TCP-Bind-Shell-with-C_2/), I would encourage you to do so as it covers most of the Assembly concepts needed to understand this part of the process.
 
 ```nasm
 global _start
@@ -236,4 +238,5 @@ exit:
         mov rax, 60
         syscall
 ```
-<h2></h2>
+
+<h2>Removing null bytes from generated shellcode</h2>
