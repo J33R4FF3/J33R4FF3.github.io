@@ -155,6 +155,17 @@ The code for the password protected reverse shell can be found [here](https://gi
 
 If you have not, by now, read the blogpost [here](https://j33r4ff3.github.io/blog/Creating-TCP-Bind-Shell-with-C_2/), I would encourage you to do so as it covers most of the Assembly concepts needed to understand this part of the process.
 
+Ok, so if you have started reading this then I assume syscalls, registers and The Stack already makes sense to you and we can carry on coding our reverse shell in Assembly. As you might have noticed, the reverse shell has fewer stages and fewer syscalls as well as one new syscall. Let's map out the syscall we will be using in Assembly
+
+```nasm
+read == 0
+socket == 41
+connect == 42
+dup2 == 33
+execve == 59
+exit == 60
+```
+
 ```nasm
 global _start
 
