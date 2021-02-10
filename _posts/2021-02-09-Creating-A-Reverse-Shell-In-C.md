@@ -22,9 +22,17 @@ We will step through the process again following the same framework:
 
 A reverse shell is when a victim machine initiates a connection back to the attacker controller machine and spawns a shell upon connection. The reason we would want to use a reverse shell rather than a bind shell is usually to get past a firewall, that do not allow incoming connections, or a NAT solution. If we were to leave our compiled reverse shell lying around on a server that we tested for instance, then anybody would be able to use it. That is if the compiled binary accepts arguments, which ours does not in this case, but it should illustrate the point. In such a case, we hardcode the password so at least they will need to reverse engineer the binary, to find the password, before they can execute commands on the connect-back.
 
+<h3>Creating the reverse shell</h3>
 
+In the process of creating a bind shell, we will be stepping through 7 stages:
 
-
+<ol>
+  <li>Creating a new socket</li>
+  <li>Initiate the connection back to remote server</li>
+  <li>Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities.</li>
+  <li>Wait for input (password) to be received and compare it against the correct password string</li>
+  <li>Spawn the shell, if password is correct</li>
+</ol>
 
 ```c
 #include<stdio.h>
