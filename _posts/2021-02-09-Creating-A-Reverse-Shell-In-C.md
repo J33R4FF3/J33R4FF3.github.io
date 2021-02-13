@@ -24,7 +24,7 @@ A reverse shell is when a victim machine initiates a connection back to the atta
 
 <h3>Creating the reverse shell</h3>
 
-In the process of creating a bind shell, we will be stepping through 7 stages:
+In the process of creating a reverse shell, we will be stepping through 7 stages:
 
 <ol>
   <li>Creating a new socket</li>
