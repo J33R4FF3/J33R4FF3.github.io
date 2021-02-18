@@ -543,6 +543,6 @@ id
 uid=1000(osboxes) gid=1000(osboxes) groups=1000(osboxes)
 ```
 
-Great, our shellcode successfully executed and gave us our intented shellcode length.
+Great, our shellcode successfully executed and gave us our intended shellcode length.
 
 The complete Assembly code and shellcode can be found [here](https://github.com/J33R4FF3/Pass_Rev_Shell) as Pass_Rev_Shell.nasm and Shellcode respectively.
